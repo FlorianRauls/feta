@@ -1,12 +1,16 @@
 import statement
+import table
+import lists
+import std/rdstdin
+import window
 
-when system.hostOS == "windows":
-  echo "running on Windows!"
-elif system.hostOS == "linux":
-  echo "running on Linux!"
-elif system.hostOS == "macosx":
-  echo "running on Mac OS X!"
-else:
-  echo "unknown operating system"
+var
+ exampleNames = initDoublyLinkedList[string]()
+ a = newDoublyLinkedNode[string]("a")
+ c = newDoublyLinkedNode[string]("c")
+exampleNames.append(a)
+exampleNames.append(c)
 
-echo x
+var example = newTable(exampleNames)
+
+echo example
