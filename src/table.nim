@@ -1,4 +1,3 @@
-import tables
 import lists
 
 #[ Implementation of the generic Table class

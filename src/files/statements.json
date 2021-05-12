@@ -1,0 +1,18 @@
+{
+"create":
+    {
+        "word" :
+            "create"
+            ,
+        "legalList" : 
+            ["table"]
+    },
+"table":
+    {
+        "word" :
+
+            "table",
+        "legalList":
+            ["from", "with"]
+    }                
+}
