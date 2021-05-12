@@ -1,0 +1,20 @@
+{
+"create":
+    {
+        "word" :
+            "create",
+        "type":
+            "CREATION",
+        "prodRule" : 
+            ["TABLE"]
+    },
+"table":
+    {
+        "word" :
+            "table",
+        "type":
+            "TABLE",
+        "prodRule":
+            ["LOCATION", "SPECIFIER", "TERMINAL"]
+    }                
+}

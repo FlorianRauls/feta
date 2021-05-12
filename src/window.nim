@@ -1,7 +1,7 @@
 import std/rdstdin
 import lists
 import strutils
-import evaluate
+import lexer
 
 type
   Terminal* = object # This is the table Object itself
