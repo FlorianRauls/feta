@@ -15,4 +15,5 @@ type
     
 
 proc buildParseTree*(annotatedSequence : seq[tuple[word: string, typ: string]]) =
-    echo annotatedSequence
+    for word in items(annotatedSequence):
+      echo word[1]
