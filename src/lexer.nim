@@ -3,6 +3,7 @@ import lists
 import statementMatcher
 import statement
 import json
+import parseTree
 
 type
     Evaluator* = object
@@ -48,11 +49,24 @@ proc legalSentence*(sentence : SinglyLinkedList) : bool =
             # check if fits the production rules
             result = checkLegal(typ, constructedList)
  
+proc annotateSequence(sentence : SinglyLinkedList[string]) : seq[tuple[word: string, typ: string]] =
+    for word in sentence.nodes():
+        # annotate current word
+        var typ = to(StatementsMatcher[word.value]["type"], string)
+        result.add((word.value, typ))
 
 proc evaluateSentence*(sentence : SinglyLinkedList[string]) =
+
+    # check if the given sequence is following grammar correctly
     var check = legalSentence(sentence)
+
+    # if it does
     if  check == true:
-        echo "This went right buddy"
+        # build the parse tree from annotated sequence
+        var anSeq = annotateSequence(sentence)
+        buildParseTree(anSeq)
+
+    # else raise
     else:
-        echo "This went wrong buddy"
+        raise newException( FieldError, "Input is not sensible sentence" )
 

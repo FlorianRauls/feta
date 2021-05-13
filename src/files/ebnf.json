@@ -15,6 +15,33 @@
         "type":
             "TABLE",
         "prodRule":
-            ["LOCATION", "SPECIFIER", "TERMINAL"]
-    }                
+            ["LOCATION", "SPECIFIER"]
+    },
+"with":
+    {
+        "word" :
+            "with",
+        "type":
+            "SPECIFIER",
+        "prodRule":
+            ["ENTRY"]
+    },
+"GENERIC_STRING":
+    {
+        "word" :
+            "GENERIC_STRING",
+        "type":
+            "ENTRY",
+        "prodRule":
+            ["TERMINAL", "ENTRY_SEPERATOR"]
+    },
+"|":
+    {
+        "word" :
+            "|",
+        "type":
+            "ENTRY_SEPERATOR",
+        "prodRule":
+            ["ENTRY"]
+    }        
 }
