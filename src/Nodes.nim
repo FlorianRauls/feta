@@ -5,14 +5,19 @@ type
     nkFloat,        # a leaf with a float value
     nkString,       # a leaf with a string value
     nkRow,          # a row node
+    nkHeader,       # a header node
     nkTable         # a table node
   Node* = ref object
+    parent*: Node
+    children*: seq[Node]
     case kind*: NodeKind  # the ``kind`` field is the discriminator
       of nkInt: intVal*: int
       of nkFloat: floatVal*: float
       of nkString: strVal*: string
       of nkRow:
         values*: seq[Node]
+      of nkHeader: boolVal*: bool
       of nkTable:
         rows*: seq[Node]
+        header*: Node
     

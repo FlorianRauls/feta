@@ -24,6 +24,15 @@
         "type":
             "SPECIFIER",
         "prodRule":
+            ["ENTRY", "HEADER"]
+    },
+"names":
+    {
+        "word" :
+            "names",
+        "type":
+            "HEADER",
+        "prodRule":
             ["ENTRY"]
     },
 "GENERIC_STRING":
