@@ -64,6 +64,7 @@ proc evaluateSentence*(sentence : SinglyLinkedList[string]) =
     if  check == true:
         # build the parse tree from annotated sequence
         var anSeq = annotateSequence(sentence)
+        anSeq.add(("><", "TERMINAL"))
         buildParseTree(anSeq)
 
     # else raise

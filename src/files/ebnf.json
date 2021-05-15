@@ -43,5 +43,14 @@
             "ENTRY_SEPERATOR",
         "prodRule":
             ["ENTRY"]
-    }        
+    } ,   
+"><":
+    {
+        "word" :
+            "><",
+        "type":
+            "TERMINAL",
+        "prodRule":
+            [""]
+    }    
 }
