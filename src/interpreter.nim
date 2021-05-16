@@ -1,23 +1,26 @@
 import Nodes
+import deques
 
 #[Postorder traversal of the syntax tree in the style:
 def visit(node):
     # for every child node from left to right
     for child in node.children:
-        visit(child)
-        <<<Do postorder actions>>>    
-    
+        visit(child)  
+Nodes get saved in the execStack so they can later be exectued in the right order
 ]#
-proc traverse*(node: Node) = 
-    if len(node.children) != 0:
-        echo type(node.children)
-        for child in node.children:
-            traverse(child)
-    else:
-        echo type(node.children)
-        return
+var execStack : seq[Node]
+proc postorder*(node: Node) =
+  if node.isNil: return
+  else: 
+      execStack.add(node)
+      for child in node.children:
+        postorder(child)
 
 proc interpret*(tree: Node) =
-    traverse(tree)
+    # build exec Stack
+    postorder(tree)
+    # exectute exec Stack
+    for item in execStack:
+        echo item.kind
 
 
