@@ -20,4 +20,27 @@ type
       of nkTable:
         rows*: seq[Node]
         header*: Node
-    
+
+# corrsesponds to nkString
+proc stringNode*(node : Node) : string =
+  result= node.strVal
+
+# corrsesponds to nkInt
+proc intNode*(node : Node) : int =
+  result= node.intVal
+
+# corrsesponds to nkFloat
+proc floatNode*(node : Node) : float =
+  result= node.floatVal
+
+# corrsesponds to nkRow
+proc nkRowNode*(node : Node) : seq[Node] =
+  result= node.values
+
+# corrsesponds to nkHeaeder
+proc headerNode*(node : Node) : bool =
+  result= node.boolVal
+
+# corrsesponds to nkTable
+proc tableNode*(node : Node) : Node =
+  result= node
