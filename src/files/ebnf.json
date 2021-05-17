@@ -42,7 +42,7 @@
         "type":
             "ENTRY",
         "prodRule":
-            ["TERMINAL", "ENTRY_SEPERATOR"]
+            ["TERMINAL", "ENTRY_SEPERATOR", "SPECIFIER"]
     },
 "|":
     {

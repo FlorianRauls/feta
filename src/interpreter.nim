@@ -3,6 +3,7 @@ import deques
 import macros 
 import table
 import algorithm
+import strutils
 
 #[Postorder traversal of the syntax tree.
 Nodes get saved in the execStack so they can
@@ -30,7 +31,8 @@ var header = false
 
 # construct cell from node
 proc visit_stringNode(node : Node) =
-  var cell = Cell(kind : CellKind.nkString, strVal : node.strVal)
+  # stripping quotations from strings
+  var cell = Cell(kind : CellKind.nkString, strVal : node.strVal.strip(chars = {'\'','\"'}))
   cellStack.add(cell)
 
 # construct cell from node

@@ -4,10 +4,24 @@ import statementMatcher
 import statement
 import json
 import parseTree
+import strutils
 
 type
     Evaluator* = object
 
+
+# returns true if the given string is set in quotes
+proc isQuoted(word : string) : bool =
+    return word.startsWith("\"") and word.endsWith("\"") or word.startsWith("\'") and word.endsWith("\'")
+
+
+# proc which casts strings to corresponding type in ebnf format
+proc getType(word : string) : string =
+    if isQuoted(word):
+        result = "GENERIC_STRING"
+    else:
+        result = word
+        
 #[ This feels like a hack but I cannot find a more efficient way to deal with this problem since
 Nim's JSON mechanics are really strange to me.
 To check the grammatical legality of a given sentence we go through each word
@@ -22,13 +36,15 @@ proc legalSentence*(sentence : SinglyLinkedList) : bool =
         # get information about current input
         var statement : JsonNode
         try:
-            statement = StatementsMatcher[word.value]
+            var val = getType(word.value)
+            statement = StatementsMatcher[val]
         except:
             var output = word.value & " is an unknown statement."
             raise newException( FieldError, output )
 
         # get EBNF production rules of current word
         var reference = statement["prodRule"]
+
         # cast from JSONarray to SinglylinkedList
         var constructedList = initSinglyLinkedList[string]()
         for item in items(reference):
@@ -36,10 +52,14 @@ proc legalSentence*(sentence : SinglyLinkedList) : bool =
             constructedList.append(helper)
         # if current word is not the last word we use the next one
         if word.next != nil:
+            var val = getType(word.next.value)
+
             # get type of next word
-            var typ = to(StatementsMatcher[word.next.value]["type"], string)
+            var typ = to(StatementsMatcher[val]["type"], string)
+
             # check if fits the production rules
             result = checkLegal(typ, constructedList)
+
             # if not break and throw error
             if result != true:
                 break
@@ -52,7 +72,8 @@ proc legalSentence*(sentence : SinglyLinkedList) : bool =
 proc annotateSequence(sentence : SinglyLinkedList[string]) : seq[tuple[word: string, typ: string]] =
     for word in sentence.nodes():
         # annotate current word
-        var typ = to(StatementsMatcher[word.value]["type"], string)
+        var val = getType(word.value)
+        var typ = to(StatementsMatcher[val]["type"], string)
         result.add((word.value, typ))
 
 proc evaluateSentence*(sentence : SinglyLinkedList[string]) =

@@ -47,8 +47,12 @@ proc setColumnNames*(table: var Table, names : var seq[string]) : Table =
 
 # Debugging proc for printing out table information
 proc debugTable*(table: Table) = 
+  echo ""
+  echo ""
   echo "Interpret Header:"
   echo table.interpretHeader
+  echo ""
+  echo ""
   echo "Get values:"
   for row in table.rows:
     echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
