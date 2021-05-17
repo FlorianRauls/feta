@@ -48,6 +48,7 @@ proc visit_floatNode(node : Node) =
 # construct row from cellStack infomraiton
 # and reset it afterwards
 proc visit_rowNode(node: Node) =
+  cellStack.reverse()
   var row = Row(values : cellStack)
   cellStack = @[]
   rowStack.add(row)
@@ -55,6 +56,7 @@ proc visit_rowNode(node: Node) =
 # construct table from header and rowStack information
 # and reset them afterwards
 proc visit_tableNode(node: Node) =
+  rowStack.reverse()
   var table = Table(interpretHeader : header, rows : rowStack)
   rowStack = @[]
   header = false
