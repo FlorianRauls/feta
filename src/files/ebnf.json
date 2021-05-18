@@ -24,7 +24,7 @@
         "type":
             "SPECIFIER",
         "prodRule":
-            ["ENTRY", "HEADER"]
+            ["FLOAT_ENTRY", "STRING_ENTRY", "INT_ENTRY", "HEADER"]
     },
 "names":
     {
@@ -33,14 +33,34 @@
         "type":
             "HEADER",
         "prodRule":
-            ["ENTRY"]
+            ["FLOAT_ENTRY", "STRING_ENTRY", "INT_ENTRY"]
     },
 "GENERIC_STRING":
     {
         "word" :
             "GENERIC_STRING",
         "type":
-            "ENTRY",
+            "STRING_ENTRY",
+        "prodRule":
+            ["TERMINAL", "ENTRY_SEPERATOR", "SPECIFIER"]
+    },
+
+"GENERIC_INT":
+    {
+        "word" :
+            "GENERIC_INT",
+        "type":
+            "INT_ENTRY",
+        "prodRule":
+            ["TERMINAL", "ENTRY_SEPERATOR", "SPECIFIER"]
+    },
+
+"GENERIC_FLOAT":
+    {
+        "word" :
+            "GENERIC_FLOAT",
+        "type":
+            "FLOAT_ENTRY",
         "prodRule":
             ["TERMINAL", "ENTRY_SEPERATOR", "SPECIFIER"]
     },
@@ -51,7 +71,7 @@
         "type":
             "ENTRY_SEPERATOR",
         "prodRule":
-            ["ENTRY"]
+            ["STRING_ENTRY", "FLOAT_ENTRY", "INT_ENTRY"]
     } ,   
 "><":
     {

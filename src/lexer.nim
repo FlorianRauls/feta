@@ -10,6 +10,36 @@ type
     Evaluator* = object
 
 
+#[
+proc parseInt(s: string): int {...}
+Parses a decimal integer value contained in s.
+
+If s is not a valid integer, ValueError is raised
+]#
+
+proc isInt(word : string) : bool =
+    try:
+        var x = parseInt(word)
+        return true
+    except ValueError:
+        return false
+
+#[
+
+proc parseFloat(s: string): float {...}
+Parses a decimal floating point value contained in s.
+
+If s is not a valid floating point number, ValueError is raised. NAN, INF, -INF are also supported (case insensitive comparison).
+
+]#
+
+proc isFloat(word : string) : bool =
+    try:
+        var x = parseFloat(word)
+        return true
+    except ValueError:
+        return false
+
 # returns true if the given string is set in quotes
 proc isQuoted(word : string) : bool =
     return word.startsWith("\"") and word.endsWith("\"") or word.startsWith("\'") and word.endsWith("\'")
@@ -19,6 +49,10 @@ proc isQuoted(word : string) : bool =
 proc getType(word : string) : string =
     if isQuoted(word):
         result = "GENERIC_STRING"
+    elif isInt(word):
+        result = "GENERIC_INT"
+    elif isFloat(word):
+        result = "GENERIC_FLOAT"
     else:
         result = word
         
