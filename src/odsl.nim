@@ -76,6 +76,10 @@ proc add*(this : Row, x : float) : Row =
   result = this
   result.items.add(newCell(x))
 
+proc add*(this : Row, x : string) : Row =
+  result = this
+  result.items.add(newCell(x))
+
 proc `|` * (x : int, y : int) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
 
@@ -84,10 +88,6 @@ proc `|` * (x : Row, y : int) : Row =
 
 proc `|` * (x : int, y : Row) : Row = 
   result = y.add(x)
-
-proc add*(this : Row, x : string) : Row =
-  result = this
-  result.items.add(newCell(x))
 
 proc `|` * (x : string, y : string) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
