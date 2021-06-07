@@ -1,5 +1,7 @@
 import class
-
+import api
+import json 
+import strutils
 # kind of possible cells
 type CellKind* = enum  # the different node types
   nkInt,          # a cell with an integer value
@@ -137,3 +139,39 @@ proc with * (name : string, row : Row) : TableConstructor =
 
 proc create * (table : Table) : Table =
   result = table
+
+proc toSheet * (table : Table) : JsonNode =
+    var output : seq[seq[string]]
+    # count no of rows
+    var rowDepth = 0
+    # count no of max items in a single row
+    var maxColDepth = 0
+    # go through all rows
+    for row in table.rows:
+        # temporary storage for row
+        var outRow : seq[string]
+        # increment rows
+        rowDepth = rowDepth + 1 
+        # temporary item counter
+        var colDepth = 0
+        for item in row.items:
+            case item.kind:
+                of nkInt: outRow.add($item.intVal)
+                of nkFloat: outRow.add($item.floatVal)
+                of nkString: outRow.add(item.strVal)  
+            colDepth = colDepth + 1 
+        # if temporary counter is the new max it is the new standard
+        if colDepth > maxColDepth:
+          maxColDepth = colDepth
+        
+        output.add(outRow)
+    # write result json which will be posted
+    var col = toUpperAscii(char(maxColDepth+96))
+    var ro = $rowDepth
+    var rangeString ="testSheet!A1:"
+    rangeString.add(col)
+    rangeString.add(ro)
+    result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
+    # post json
+    writeSheet(result)
+    echo result
