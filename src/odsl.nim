@@ -23,18 +23,22 @@ class Cell * of RootObj:
   proc newCell*(value: float):
       result = Cell(kind: nkFloat, floatVal: value)
      
-
+#[ Implementation of the generic Row class
+which will be the center and target of most language features]#
 class Row * of RootObj:
     var items* : seq[Cell]
     proc newRow*(items: seq[Cell]):
         result = Row(items: items)
 
-
+#[ Implementation of the generic TableConstructer type
+    will be used as a stand in for tables when needed]#
 type 
   TableConstructor* = object
     name* : string
     rows* : seq[Row]
 
+#[ Implementation of the generic Table class
+which will be the center and target of most language features]#
 class Table * of RootObj:
     var name* : string
     var rows* : seq[Row]
@@ -44,6 +48,7 @@ class Table * of RootObj:
       result = Table(name: constructor.name, rows: constructor.rows)   
     
 # Debugging proc for printing out table information
+# TO-DO: DO THIS BETTER!
 proc debugTable*(table: Table) = 
   echo ""
   echo "Name:    ", table.name
@@ -70,6 +75,7 @@ proc debugTable*(table: Table) =
   write(stdout, "-")
   echo ""
 
+#################### OVERLOADING SECTION ###############################
 proc add*(this : Row, x : int) : Row =
   result = this
   result.items.add(newCell(x))
@@ -140,7 +146,11 @@ proc with * (name : string, row : Row) : TableConstructor =
 proc create * (table : Table) : Table =
   result = table
 
-proc toSheet * (table : Table) : JsonNode =
+#################### OVERLOADING SECTION END ###########################
+
+# take a Table Object and create a JSON response from it
+# TO-DO: This implementation is not generic enough and has to be changed in the future!
+proc toJSONBody * (table : Table) : JsonNode =
     var output : seq[seq[string]]
     # count no of rows
     var rowDepth = 0
@@ -172,6 +182,4 @@ proc toSheet * (table : Table) : JsonNode =
     rangeString.add(col)
     rangeString.add(ro)
     result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
-    # post json
-    writeSheet(result)
-    echo result
+    

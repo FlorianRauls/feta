@@ -1,5 +1,6 @@
 import odsl
-import api
+
+# RIGHT NOW THIS SECTION IS MORE LIKE A TESTING GROUND 
 
 var row = 1 | 2.5 | "hi" | 2
 
@@ -13,5 +14,5 @@ z.rows = test
 
 var testTable1 = create newTable with name and test
 debugTable(testTable1)
-var y = toSheet(testTable1)
+var y = toJSONBody(testTable1)
 
