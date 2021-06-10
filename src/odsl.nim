@@ -115,8 +115,11 @@ proc `|` * (x : Row, y : float) : Row =
 proc `|` * (x : float, y : Row) : Row = 
   result = y.add(x)
 
-proc name * (name : string) : string =
-  result = name
+proc `|` * (x : int, y : string) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : string, y : int) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
 
 proc `and` * (x : seq[Row], y : Row) : seq[Row] =
   result = x & @[y]

@@ -1,18 +1,25 @@
 import odsl
+import dsl
+import macros
 
-# RIGHT NOW THIS SECTION IS MORE LIKE A TESTING GROUND 
+        
 
-var row = 1 | 2.5 | "hi" | 2
+var sheet = spreadsheet:
+    name:
+        "Organization"
+    values:
+        "Max Maxson" | 35 | "example@mail-address.de" 
+        "Jennifer Jennifson" | 22 | "also@mail-address.de" 
+        "Christine Christensen" | 45 | "beispiel@mail-address.de" 
+        "Karl Karlson" | 27 | "definitiv_eine_mail_adresse@mail-address.de" 
 
+debugTable(sheet)
 
-var test = row and "hello" | "world" and row and "hello" | "world" | 2.4 and "hello" | "world" | 2.4 and "hello" | "world" | 2.4 and "hello" | "world" | 2.4
-var name = "bernd"
+#[
+# OPEN SYNTAX GOALS:
+Table:
+    name | date | e-mail from 'real_file.xlsx'
 
-var z : TableConstructor
-z.name = name
-z.rows = test
-
-var testTable1 = create newTable with name and test
-debugTable(testTable1)
-var y = toJSONBody(testTable1)
-
+Table:
+    for name | date | e-mail in table   
+]#
