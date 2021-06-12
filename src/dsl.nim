@@ -23,11 +23,13 @@ macro values * (statement : untyped): seq[Row] =
     result = start
 
 # constructs Name type
-proc name * (name : string) : Name =
+proc setName * (name : string) : Name =
   result.name = name
 
 # proc which generates new table
-proc newSpreadsheet*(name : Name, rows : seq[Row]): Table = Table(name: name.name, rows: rows)
+proc newSpreadsheet*(name : Name, rows : seq[Row], header: Row): Table = 
+  result = newTable(name.name, rows, header)
 
 # central macro which user can use
-macro spreadsheet * (statement: untyped): Table =  result = newCall("newSpreadsheet", statement[0], statement[1])
+macro spreadsheet * (statement: untyped): Table =  
+  result = newCall("newSpreadsheet", statement[0], statement[2], statement[1])

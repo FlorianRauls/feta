@@ -1,7 +1,7 @@
-import class
 import api
 import json 
 import strutils
+
 # kind of possible cells
 type CellKind* = enum  # the different node types
   nkInt,          # a cell with an integer value
@@ -11,24 +11,28 @@ type CellKind* = enum  # the different node types
   
 #[ Implementation of the generic Cell class
 which will be the center and target of most language features]#
-class Cell * of RootObj:
-  var kind* : CellKind
-  var intVal*: int
-  var floatVal*: float
-  var strVal*: string
-  proc newCell*(value: string):
-      result = Cell(kind: nkString, strVal: value)
-  proc newCell*(value: int):
-      result = Cell(kind: nkInt, intVal: value)
-  proc newCell*(value: float):
-      result = Cell(kind: nkFloat, floatVal: value)
+type 
+  Cell * = object
+    kind* : CellKind
+    intVal*: int
+    floatVal*: float
+    strVal*: string
+
+proc newCell*(value: string): Cell =
+    result = Cell(kind: nkString, strVal: value)
+proc newCell*(value: int): Cell =
+    result = Cell(kind: nkInt, intVal: value)
+proc newCell*(value: float): Cell =
+    result = Cell(kind: nkFloat, floatVal: value)
      
 #[ Implementation of the generic Row class
 which will be the center and target of most language features]#
-class Row * of RootObj:
-    var items* : seq[Cell]
-    proc newRow*(items: seq[Cell]):
-        result = Row(items: items)
+type 
+  Row * = object
+    items* : seq[Cell]
+
+proc newRow*(items: seq[Cell]): Row =
+    result = Row(items: items)
 
 #[ Implementation of the generic TableConstructer type
     will be used as a stand in for tables when needed]#
@@ -37,41 +41,96 @@ type
     name* : string
     rows* : seq[Row]
 
+# just for sytnax reasons here
+proc header * (row : Row) : Row =
+  result = row
+
+
 #[ Implementation of the generic Table class
 which will be the center and target of most language features]#
-class Table * of RootObj:
-    var name* : string
-    var rows* : seq[Row]
-    proc newTable*(name: string, rows: seq[Row]):
-        result = Table(name: name, rows: rows)
-    proc newTable*(constructor: TableConstructor):
-      result = Table(name: constructor.name, rows: constructor.rows)   
-    
+type
+  Table * = object
+    name* : string
+    rows* : seq[Row]
+    hasHeader* : bool
+    header* : Row
+    longestItems* : seq[int]
+
+proc newTable*(name: string, rows: seq[Row], header : Row): Table =
+  var hasHeader = false
+  if len(header.items) > 0:
+    hasHeader = true
+  var candidates : seq[int]
+  for row in rows:
+    for i, item in pairs(row.items):
+      var current = 0
+      if len(candidates) < i+1:
+        candidates.add(0)
+      case item.kind:
+        of nkInt: current = len($item.intVal)
+        of nkFloat: current = len($item.floatVal)
+        of nkString: current = len($item.strVal)
+      if current > candidates[i]:
+        candidates[i] = current
+
+    if hasHeader:
+      result = Table(name: name, rows: rows, longestItems: candidates, hasHeader: hasHeader, header: header)  
+    else:
+      result = Table(name: name, rows: rows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0])
+
+proc pad(input : string, padTo: int) : string =
+  var goal = padTo 
+  result = input
+  for i in len(input)..goal:
+    result = ' ' &  result 
+
+
+
 # Debugging proc for printing out table information
 # TO-DO: DO THIS BETTER!
 proc debugTable*(table: Table) = 
   echo ""
   echo "Name:    ", table.name
   echo ""
-  echo "Get values:"
   if len(table.rows)  == 0:
     return
-  for item in table.rows[0].items:
-    write(stdout, "--------")
+
+  # First Delimiter
+  for i in table.longestItems:
+    for z in 0..i+7:
+      write(stdout, "-")
   write(stdout, "-")
+  echo ""
+  # Header Section
+  write(stdout, "|   ")
+  for i, item in pairs(table.header.items):
+    case item.kind:
+      of nkInt: write(stdout, pad($item.intVal, table.longestItems[i]))
+      of nkFloat: write(stdout, pad($item.floatVal, table.longestItems[i]))
+      of nkString: write(stdout, pad(item.strVal, table.longestItems[i]))
+    write(stdout, "   |   ")
+  echo ""
+  # Second Delimiter
+  for i in table.longestItems:
+    for z in 0..i+7:
+      write(stdout, "-")
+  write(stdout, "-")
+  # Table Entries Section
   
   for row in table.rows:
     echo " "
     write(stdout, "|   ")
-    for item in row.items:
+    for i, item in pairs(row.items):
       case item.kind:
-        of nkInt: write(stdout, item.intVal)
-        of nkFloat: write(stdout, item.floatVal)
-        of nkString: write(stdout, item.strVal)
+        of nkInt: write(stdout, pad($item.intVal, table.longestItems[i]))
+        of nkFloat: write(stdout, pad($item.floatVal, table.longestItems[i]))
+        of nkString: write(stdout, pad(item.strVal, table.longestItems[i]))
       write(stdout, "   |   ")
   echo ""
-  for item in table.rows[0].items:
-    write(stdout, "--------")
+  # Last Delimiter
+  for i in table.longestItems:
+    for z in 0..i+7:
+      write(stdout, "-")
   write(stdout, "-")
   echo ""
 
@@ -186,3 +245,6 @@ proc toJSONBody * (table : Table) : JsonNode =
     rangeString.add(ro)
     result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
     
+
+proc show*(table:Table) =
+  debugTable(table)
