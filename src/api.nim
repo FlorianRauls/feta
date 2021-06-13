@@ -1,11 +1,9 @@
 import googleapi/connection
 import googleapi/sheets
 import googleapi/drive
-import asyncdispatch, json, os, streams, strformat
+import asyncdispatch, json
 import strutils
 import json
-import odsl
-import httpclient
 import files/userData
 
 # location of odsl-service worker json for google authorization

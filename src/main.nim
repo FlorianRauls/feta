@@ -2,10 +2,6 @@ import odsl
 import dsl       
 
 
-
-
-
-
 ############################ ODSL Sytax Showcase #################################
 
 
@@ -27,20 +23,19 @@ var sheet = spreadsheet:
 
 sheet.show()
 
+sheet -= "Salary"
+
+sheet.show()
+
+sheet.renameColumn("Age", "New Column Name")
+
+sheet.show()
+
+sheet := "New Spreadsheet Name"
+
+sheet.show()
+
+sheet -= "Does Not Exist"
 
 ##################################################################################
 
-
-
-
-
-
-
-#[
-# OPEN SYNTAX GOALS:
-Table:
-    name | date | e-mail from 'real_file.xlsx'
-
-Table:
-    for name | date | e-mail in table   
-]#

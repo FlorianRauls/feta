@@ -56,10 +56,14 @@ type
     header* : Row
     longestItems* : seq[int]
 
+# Table Constructor
+# TO-DO: Debloat this function such that the pretty-debug functionality happens
+# in a seperate function!
 proc newTable*(name: string, rows: seq[Row], header : Row): Table =
   var hasHeader = false
   if len(header.items) > 0:
     hasHeader = true
+  #################this section happens to ensure readable debug screens####################
   var candidates : seq[int]
   for row in rows:
     for i, item in pairs(row.items):
@@ -73,10 +77,19 @@ proc newTable*(name: string, rows: seq[Row], header : Row): Table =
       if current > candidates[i]:
         candidates[i] = current
 
-    if hasHeader:
-      result = Table(name: name, rows: rows, longestItems: candidates, hasHeader: hasHeader, header: header)  
-    else:
-      result = Table(name: name, rows: rows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0])
+  if hasHeader:
+    for i, item in pairs(header.items):
+      var current = 0
+      case item.kind:
+        of nkInt: current = len($item.intVal)
+        of nkFloat: current = len($item.floatVal)
+        of nkString: current = len($item.strVal)
+      if current > candidates[i]:
+        candidates[i] = current
+        # READABLE DEBUGS END #############################
+    result = Table(name: name, rows: rows, longestItems: candidates, hasHeader: hasHeader, header: header)  
+  else:
+    result = Table(name: name, rows: rows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0])
 
 proc pad(input : string, padTo: int) : string =
   var goal = padTo 
@@ -91,7 +104,6 @@ proc pad(input : string, padTo: int) : string =
 proc debugTable*(table: Table) = 
   echo ""
   echo "Name:    ", table.name
-  echo ""
   if len(table.rows)  == 0:
     return
 
@@ -132,6 +144,8 @@ proc debugTable*(table: Table) =
     for z in 0..i+7:
       write(stdout, "-")
   write(stdout, "-")
+  echo ""
+  echo ""
   echo ""
 
 #################### OVERLOADING SECTION ###############################
@@ -246,5 +260,41 @@ proc toJSONBody * (table : Table) : JsonNode =
     result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
     
 
+# interface to use debugTable
 proc show*(table:Table) =
   debugTable(table)
+
+# Atomic Action: Delete Column
+proc removeColumn * (table : var Table, toDelete : string) =
+  var names : seq[string]
+  for i in table.header.items:
+    names.add(i.strVal)
+  if toDelete in names:
+    var found = names.find(toDelete)
+    for i in 0..len(table.rows)-1:
+      delete(table.rows[i].items, found)
+    table.header.items.delete(found)
+    table = newTable(table.name, table.rows, table.header)
+  else:
+    echo "\"" & toDelete & "\"" & " is not a valid column in Spreadsheet " &  "\"" & table.name & "\"" 
+
+# Atomic ACtion: Delete Column Operator
+proc `-=` * (table : var Table, toDelete : string) =
+  removeColumn(table, toDelete)
+
+
+# Atomic Action : Rename Table
+proc renameSpreadsheet * (table : var Table, newName : string) = 
+  table.name = newName
+
+# Atomic Action : Rename Table Operator
+proc `:=` * (table : var Table, newName : string) = 
+  renameSpreadsheet(table, newName)
+
+
+# Atomic Action : Rename Column
+proc renameColumn * (table : var Table, oldName : string, newName : string) =
+  for i in 0..len(table.header.items)-1:
+    if table.header.items[i].strVal == oldName:
+      table.header.items[i] = newCell(newName)
+  table = newTable(table.name, table.rows, table.header)
