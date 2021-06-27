@@ -33,3 +33,4 @@ proc newSpreadsheet*(name : Name, rows : seq[Row], header: Row): Table =
 # central macro which user can use
 macro spreadsheet * (statement: untyped): Table =  
   result = newCall("newSpreadsheet", statement[0], statement[2], statement[1])
+  

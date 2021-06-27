@@ -2,11 +2,19 @@ import api
 import json 
 import strutils
 
+# Custom Made NaN type for internal representation
+type
+  Nil* = object
+    needsVal : int
+
+var null* : Nil
+
 # kind of possible cells
 type CellKind* = enum  # the different node types
   nkInt,          # a cell with an integer value
   nkFloat,        # a cell with a float value
-  nkString        # a cell with a string value
+  nkString,        # a cell with a string value
+  nkEmpty         # an empty cell
 
   
 #[ Implementation of the generic Cell class
@@ -24,6 +32,8 @@ proc newCell*(value: int): Cell =
     result = Cell(kind: nkInt, intVal: value)
 proc newCell*(value: float): Cell =
     result = Cell(kind: nkFloat, floatVal: value)
+proc newCell*(value: Nil): Cell =
+    result = Cell(kind: nkEmpty)
      
 #[ Implementation of the generic Row class
 which will be the center and target of most language features]#
@@ -59,6 +69,8 @@ type
 # Table Constructor
 # TO-DO: Debloat this function such that the pretty-debug functionality happens
 # in a seperate function!
+# TO-DO: Ensure Table Integrity via security checks!
+# --> This should be done via Empty Cell Entries
 proc newTable*(name: string, rows: seq[Row], header : Row): Table =
   var hasHeader = false
   if len(header.items) > 0:
@@ -74,6 +86,7 @@ proc newTable*(name: string, rows: seq[Row], header : Row): Table =
         of nkInt: current = len($item.intVal)
         of nkFloat: current = len($item.floatVal)
         of nkString: current = len($item.strVal)
+        of nkEmpty: current = len("NaN")
       if current > candidates[i]:
         candidates[i] = current
 
@@ -84,6 +97,7 @@ proc newTable*(name: string, rows: seq[Row], header : Row): Table =
         of nkInt: current = len($item.intVal)
         of nkFloat: current = len($item.floatVal)
         of nkString: current = len($item.strVal)
+        of nkEmpty: current = len("NaN")
       if current > candidates[i]:
         candidates[i] = current
         # READABLE DEBUGS END #############################
@@ -120,6 +134,7 @@ proc debugTable*(table: Table) =
       of nkInt: write(stdout, pad($item.intVal, table.longestItems[i]))
       of nkFloat: write(stdout, pad($item.floatVal, table.longestItems[i]))
       of nkString: write(stdout, pad(item.strVal, table.longestItems[i]))
+      of nkEmpty: write(stdout, pad("NaN", table.longestItems[i]))
     write(stdout, "   |   ")
   echo ""
   # Second Delimiter
@@ -137,6 +152,7 @@ proc debugTable*(table: Table) =
         of nkInt: write(stdout, pad($item.intVal, table.longestItems[i]))
         of nkFloat: write(stdout, pad($item.floatVal, table.longestItems[i]))
         of nkString: write(stdout, pad(item.strVal, table.longestItems[i]))
+        of nkEmpty: write(stdout, pad("NaN", table.longestItems[i]))
       write(stdout, "   |   ")
   echo ""
   # Last Delimiter
@@ -161,8 +177,37 @@ proc add*(this : Row, x : string) : Row =
   result = this
   result.items.add(newCell(x))
 
+proc add*(this : Row, x : Nil) : Row =
+  result = this
+  result.items.add(newCell(x))
+
 proc `|` * (x : int, y : int) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : string, y : string) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : float, y : float) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : int, y : string) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : string, y : int) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : Nil, y : int) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : string, y : Nil) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : int, y : Nil) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : Nil, y : string) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
+
 
 proc `|` * (x : Row, y : int) : Row = 
   result = x.add(y)
@@ -170,8 +215,6 @@ proc `|` * (x : Row, y : int) : Row =
 proc `|` * (x : int, y : Row) : Row = 
   result = y.add(x)
 
-proc `|` * (x : string, y : string) : Row = 
-  result = newRow(@[newCell(x), newCell(y)])
 
 proc `|` * (x : Row, y : string) : Row = 
   result = x.add(y)
@@ -179,20 +222,17 @@ proc `|` * (x : Row, y : string) : Row =
 proc `|` * (x : string, y : Row) : Row = 
   result = y.add(x)
 
-proc `|` * (x : float, y : float) : Row = 
-  result = newRow(@[newCell(x), newCell(y)])
-
 proc `|` * (x : Row, y : float) : Row = 
   result = x.add(y)
 
 proc `|` * (x : float, y : Row) : Row = 
   result = y.add(x)
 
-proc `|` * (x : int, y : string) : Row = 
-  result = newRow(@[newCell(x), newCell(y)])
+proc `|` * (x : Nil, y : Row) : Row = 
+  result = y.add(x)
 
-proc `|` * (x : string, y : int) : Row = 
-  result = newRow(@[newCell(x), newCell(y)])
+proc `|` * (x : Row, y : Nil) : Row = 
+  result = x.add(y)
 
 proc `and` * (x : seq[Row], y : Row) : seq[Row] =
   result = x & @[y]
@@ -244,7 +284,8 @@ proc toJSONBody * (table : Table) : JsonNode =
             case item.kind:
                 of nkInt: outRow.add($item.intVal)
                 of nkFloat: outRow.add($item.floatVal)
-                of nkString: outRow.add(item.strVal)  
+                of nkString: outRow.add(item.strVal) 
+                of nkEmpty: outRow.add("NaN") 
             colDepth = colDepth + 1 
         # if temporary counter is the new max it is the new standard
         if colDepth > maxColDepth:
@@ -264,19 +305,24 @@ proc toJSONBody * (table : Table) : JsonNode =
 proc show*(table:Table) =
   debugTable(table)
 
+# helper function which returns the integer index of a header by name
+proc getColumnIndex(table : Table, colName : string) : int =
+    var names : seq[string]
+    for i in table.header.items:
+      names.add(i.strVal)
+    if colName in names:
+      var found = names.find(colName)
+      result = found
+    else:
+      raise newException(OSError, colName & " is not in Spreadsheet " & table.name)
+
 # Atomic Action: Delete Column
 proc removeColumn * (table : var Table, toDelete : string) =
-  var names : seq[string]
-  for i in table.header.items:
-    names.add(i.strVal)
-  if toDelete in names:
-    var found = names.find(toDelete)
-    for i in 0..len(table.rows)-1:
-      delete(table.rows[i].items, found)
-    table.header.items.delete(found)
-    table = newTable(table.name, table.rows, table.header)
-  else:
-    echo "\"" & toDelete & "\"" & " is not a valid column in Spreadsheet " &  "\"" & table.name & "\"" 
+  var found = getColumnIndex(table, toDelete)
+  for i in 0..len(table.rows)-1:
+    delete(table.rows[i].items, found)
+  table.header.items.delete(found)
+  table = newTable(table.name, table.rows, table.header)
 
 # Atomic ACtion: Delete Column Operator
 proc `-=` * (table : var Table, toDelete : string) =
@@ -297,4 +343,30 @@ proc renameColumn * (table : var Table, oldName : string, newName : string) =
   for i in 0..len(table.header.items)-1:
     if table.header.items[i].strVal == oldName:
       table.header.items[i] = newCell(newName)
+  table = newTable(table.name, table.rows, table.header)
+
+# index table
+proc `[]` * (table : Table, r, c: int): Table =
+  var row = @[  newRow( @[  table.rows[r].items[c]  ]  ) ]
+  var head = newRow(  @[ table.header.items[c] ]  )
+  result = newTable(table.name, row, head)
+
+
+# index table
+proc `[]` * (table : Table, c: string, r : int): Table =
+  var colInd = getColumnIndex(table, c)
+  var row = @[  newRow( @[  table.rows[r].items[colInd]  ]  ) ]
+  var head = newRow(  @[ table.header.items[colInd] ]  )
+  result = newTable(table.name, row, head)
+
+
+# Atomic Action: Add Column
+proc addColumn * (table : var Table, name = "NaN", toAdd : Row) =
+  table.header.items.add(newCell(name))
+  for i, item in pairs(toAdd.items):
+    case item.kind:
+        of nkInt: table.rows[i] = table.rows[i].add(item.intVal)
+        of nkFloat: table.rows[i] = table.rows[i].add(item.floatVal)
+        of nkString: table.rows[i] = table.rows[i].add(item.strVal) 
+        of nkEmpty: table.rows[i] =  table.rows[i].add(null) 
   table = newTable(table.name, table.rows, table.header)

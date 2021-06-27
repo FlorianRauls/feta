@@ -4,11 +4,19 @@ import googleapi/drive
 import asyncdispatch, json
 import strutils
 import json
-import files/userData
+from files/userData import userMail
 
 # location of odsl-service worker json for google authorization
 var name = "files/odsl-316010-9ac42c4cd821.json"
+
+echo ""
+echo "Initalizing your Google Account..."
+echo "This may take a short while..."
+echo ""
+# initalized Google Sheets API worker
 var conn = waitFor newConnection(name)
+echo "Google Worker Initalized!"
+echo ""
 
 # API URLs
 const sheetApiURL = "https://sheets.googleapis.com/v4/spreadsheets"
@@ -18,6 +26,7 @@ const driveApiURL = "https://www.googleapis.com/drive/v3"
 # TO-DO implement error message!
 proc openSheet * (name : string) {.async} =
     var sheet = await getValues(conn, name, "A1:BZ1000")
+    sheet = sheet
 
 # given a certain body json send said json to google API
 # TO-DO implement error message!
@@ -26,6 +35,7 @@ proc writeGoogleSheet * (sheet : JsonNode, id : string) =
     var cut = len($sheet["range"])-2
     var ran = $sheet["range"]
     var x = waitFor setValues(conn, id, ran[1..cut], sheet)
+    x = x
 
 # given a file id and a mail address share corresponding file with given mail
 # TO-DO implement error message!
