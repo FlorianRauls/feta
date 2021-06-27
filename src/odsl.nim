@@ -65,6 +65,31 @@ type
     hasHeader* : bool
     header* : Row
     longestItems* : seq[int]
+    longestRow* : int 
+
+#################### OVERLOADING SECTION ###############################
+proc add*(this : Row, x : int) : Row =
+  result = this
+  result.items.add(newCell(x))
+
+proc add*(this : Row, x : float) : Row =
+  result = this
+  result.items.add(newCell(x))
+
+proc add*(this : Row, x : string) : Row =
+  result = this
+  result.items.add(newCell(x))
+
+proc add*(this : Row, x : Nil) : Row =
+  result = this
+  result.items.add(newCell(x))
+
+#################### OVERLOADING SECTION END ###############################
+
+# pad row with NaN-Cells
+proc padRow(row : var Row, diff : int)=
+  for i in 0..diff-1:
+    row = row.add(null)
 
 # Table Constructor
 # TO-DO: Debloat this function such that the pretty-debug functionality happens
@@ -73,11 +98,21 @@ type
 # --> This should be done via Empty Cell Entries
 proc newTable*(name: string, rows: seq[Row], header : Row): Table =
   var hasHeader = false
+  var lonRow = 0
   if len(header.items) > 0:
     hasHeader = true
+
+    # search for longest row to ensure integrity
+    if len(header.items) > lonRow:
+      lonRow = len(header.items)
+
   #################this section happens to ensure readable debug screens####################
   var candidates : seq[int]
   for row in rows:
+
+    # search for longest row to ensure integrity
+    if len(row.items) > lonRow: lonRow = len(row.items)
+
     for i, item in pairs(row.items):
       var current = 0
       if len(candidates) < i+1:
@@ -90,6 +125,14 @@ proc newTable*(name: string, rows: seq[Row], header : Row): Table =
       if current > candidates[i]:
         candidates[i] = current
 
+  # ensure same length of rows
+  var copyRows = rows
+  for i, row in pairs(rows):
+    # if the row is not the same lenght as the longest row
+    if len(row.items) < lonRow:
+      # padRow
+      padRow(copyRows[i], lonRow-len(row.items))
+
   if hasHeader:
     for i, item in pairs(header.items):
       var current = 0
@@ -101,10 +144,20 @@ proc newTable*(name: string, rows: seq[Row], header : Row): Table =
       if current > candidates[i]:
         candidates[i] = current
         # READABLE DEBUGS END #############################
-    result = Table(name: name, rows: rows, longestItems: candidates, hasHeader: hasHeader, header: header)  
-  else:
-    result = Table(name: name, rows: rows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0])
 
+    var copyHeader = header
+    if len(header.items) < lonRow:
+      copyHeader.padRow(lonRow-len(header.items))
+   
+    result = Table(name: name, rows: copyRows, longestItems: candidates, hasHeader: hasHeader, header: copyHeader, longestRow: lonRow)  
+  else:
+    result = Table(name: name, rows: copyRows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0], longestRow: lonRow)
+
+
+
+# helper function which takes a string and an integer
+# and pads the string with Spaces on both sides
+# until it is as long as the integer
 proc pad(input : string, padTo: int) : string =
   var goal = padTo 
   result = input
@@ -164,22 +217,8 @@ proc debugTable*(table: Table) =
   echo ""
   echo ""
 
-#################### OVERLOADING SECTION ###############################
-proc add*(this : Row, x : int) : Row =
-  result = this
-  result.items.add(newCell(x))
 
-proc add*(this : Row, x : float) : Row =
-  result = this
-  result.items.add(newCell(x))
-
-proc add*(this : Row, x : string) : Row =
-  result = this
-  result.items.add(newCell(x))
-
-proc add*(this : Row, x : Nil) : Row =
-  result = this
-  result.items.add(newCell(x))
+######################### OVERLOADING SECTION ################################
 
 proc `|` * (x : int, y : int) : Row = 
   result = newRow(@[newCell(x), newCell(y)])

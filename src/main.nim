@@ -19,7 +19,7 @@ var sheet = spreadsheet:
         "Karl Karlson" | 27 | null
 
 # Showw AddColumn
-sheet.addColumn("E-Mail", "a" | "b" | null | null)
+sheet.addColumn("E-Mail", "a" | "b" | null )
 
 # Show Spreadsheet
 sheet.show()
