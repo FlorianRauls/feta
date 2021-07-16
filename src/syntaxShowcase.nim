@@ -91,3 +91,18 @@ Just emulate SQL-esque syntax and conepts
 - New concepts will be difficult to introduce
 
 ]#
+
+#################################### Actual Implementations! #################################
+
+#[
+# Send an E-Mail to a desired address
+var message = "Hi this is fred."
+SendMail:
+    to:
+        "f.rauls@stud.uni-heidelberg.de"
+    subject:
+        "Example Subject"
+    text:
+        message
+
+]#

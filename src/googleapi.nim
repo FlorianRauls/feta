@@ -7,7 +7,7 @@ import json
 from files/userData import userMail
 
 # location of odsl-service worker json for google authorization
-var name = "files/odsl-316010-9ac42c4cd821.json"
+var name = "src/files/odsl-316010-9ac42c4cd821.json"
 
 echo ""
 echo "Initalizing your Google Account..."
@@ -24,9 +24,8 @@ const driveApiURL = "https://www.googleapis.com/drive/v3"
 
 # given a certain filde id request said file from google API
 # TO-DO implement error message!
-proc openSheet * (name : string) {.async} =
-    var sheet = await getValues(conn, name, "A1:BZ1000")
-    sheet = sheet
+proc openSheet * (name : string) : JsonNode =
+    result = waitFor(getValues(conn, name, "A1:BZ1000"))
 
 # given a certain body json send said json to google API
 # TO-DO implement error message!
