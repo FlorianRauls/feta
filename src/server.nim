@@ -10,13 +10,14 @@ type
     route : Table[string, SpreadSheet] ## Routes from an id to a SpreadSheet
     procRoute : Table[string, proc (): SpreadSheet] ## Routes from an id to a function which returns a SpreadSheet
     methods : Table[string, string] ## Routes from an id to the kind of SpreadSheet
-    confirmRoute : Table[string, proc() : bool] ## Routes from an id to the confirmation function
-    applyRoute : Table[string, proc()] ## Routes from an it to the proc which should be applied after confirmation
+    confirmRoute : Table[string, proc(s : SpreadSheet) : bool] ## Routes from an id to the confirmation function
+    applyRoute : Table[string, proc(s : SpreadSheet)] ## Routes from an it to the proc which should be applied after confirmation
     errorMessage : Table[string, string] ## Routes from id to error message which should be thrown for user
     jester : Jester ## The Jester server object
     settings : Settings ## Settings for Jester server
 
 var odslServer * : CustomServer
+odslServer.settings = newSettings(port=5000.Port)
 
 proc parseResult * (received : JsonNode) : SpreadSheet =
   ## Receives the JsonNode, which was sent through a Websocket
@@ -35,14 +36,15 @@ proc parseResult * (received : JsonNode) : SpreadSheet =
   result = newSpreadSheet("", outRows, head)
 
 
-proc `[]` * (server : CustomServer, id : string) : SpreadSheet =
+proc `[]=` * (server : var CustomServer, id : string, spread : SpreadSheet) =
   ## Gets the id of desired SpreadSheet on server
   ## and returns the SpreadSheet
-  result = server.route[id]
+  server.route[id] = spread
 
-proc deny() =
-  ## Send a custom message back to the user
-  ## to inform him that his entry did not work
+proc `[]` * (server : var CustomServer, id : string) : SpreadSheet =
+  ## Gets the id of desired SpreadSheet on server
+  ## and returns the SpreadSheet
+  return server.route[id]
 
 router myrouter:
   get "/":
@@ -79,27 +81,23 @@ router myrouter:
       var jso = parseJSON(seperate[1])
       # parse json to SpreadSheet
       var parsed = jso.parseResult()
-      
       ###### Check if parsed result is valid############
-      if odslServer.confirmRoute[id]():
+      if odslServer.confirmRoute[id](parsed):
+        odslServer.applyRoute[id](parsed)
         var mess = wsconn.send("success")
         ws.close(wsconn)
       else:
         var mess = wsconn.send(odslServer.errorMessage[id])
-
-      ########### Apply changes defined by user-##########       
-      #      odslServer.applyRoute[id]()
-      #     else:
-      #     deny()    
+  
     except:
       echo "websocket close: ", getCurrentExceptionMsg()
     resp Http200, "file uploaded"
 
-proc initServer * (port : int) =
+proc setPort * (port : int) =
   ## Takes a port number as input and initiates the HTTP-Server
   odslServer.settings = newSettings(port=port.Port)
 
-proc addToServer*(p : proc (): SpreadSheet, id : string, confirm : proc () : bool,  apply : proc(), error = "something went wrong") =
+proc addToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
   odslServer.procRoute[id] = p

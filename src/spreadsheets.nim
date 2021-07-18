@@ -3,24 +3,29 @@ import json
 import strutils
 import tables
 import sequtils
-from mailFunc import mailBot
 import strformat
+import asyncdispatch
+import jester
+import htmlparser
+import xmltree
+import parsecsv
 
-# Custom Made NaN type for internal representation
+from mailFunc import mailBot
+from asyncdispatch import waitFor
+
 type
+  ## type which is used for internal NaN representation
   Nil* = object
     needsVal : int
 
-var null* : Nil
+var null* : Nil ## Substitute for NaN-Value for internal functions
 
-# kind of possible cells
-type CellKind* = enum  # the different node types
-  nkInt,          # a cell with an integer value
-  nkFloat,        # a cell with a float value
-  nkString,        # a cell with a string value
-  nkEmpty         # an empty cell
+type CellKind* = enum  ## the different node types
+  nkInt,          ## a cell with an integer value
+  nkFloat,        ## a cell with a float value
+  nkString,        ## a cell with a string value
+  nkEmpty         ## an empty cell
 
-  
 #[ Implementation of the generic Cell class
 which will be the center and target of most language features]#
 type 
@@ -31,75 +36,83 @@ type
     strVal*: string
 
 proc newCell*(value: string): Cell =
-    result = Cell(kind: nkString, strVal: value)
+  ## Creates a new String-Cell
+  result = Cell(kind: nkString, strVal: value)
 proc newCell*(value: int): Cell =
-    result = Cell(kind: nkInt, intVal: value, strVal: $value)
+  ## Creates a new Int-Cell
+  result = Cell(kind: nkInt, intVal: value, strVal: $value)
 proc newCell*(value: float): Cell =
-    result = Cell(kind: nkFloat, floatVal: value, strVal: $value)
+  ## Creates a mew Float-Cell
+  result = Cell(kind: nkFloat, floatVal: value, strVal: $value)
 proc newCell*(value: Nil): Cell =
-    result = Cell(kind: nkEmpty, strVal: "-")
+  ## Creates a new NaN-Cell
+  result = Cell(kind: nkEmpty, strVal: "-")
      
 #[ Implementation of the generic Row class
 which will be the center and target of most language features]#
 type 
-  Row * = object
-    items* : seq[Cell]
+  Row * = object ## Generic Row Class
+    items* : seq[Cell] ## Holds a sequence of Cells
       
 proc newRow*(items: seq[Cell]): Row =
-    result = Row(items: items)
+  ## Row constructor
+  result = Row(items: items)
 
-# just for sytnax reasons here
 proc header * (row : Row) : Row =
+  ## Used for syntax clarification
+  ## Creates a Row from a Row
   result = row
 
+proc getValues * (row : Row) : seq[string] =
+  ## Inputs a Row and returns a seq of strings
+  ## from the values of Row
+  for v in row.items:
+    result.add(v.strVal)
 
 #[ Implementation of the generic SpreadSheet class
 which will be the center and target of most language features]#
 type
-  SpreadSheet * = object
-    name* : string
-    rows* : seq[Row]
-    hasHeader* : bool
-    header* : Row
-    longestItems* : seq[int]
-    longestRow* : int 
-    permissions* : Table[string, Table[string, bool]]
+  SpreadSheet * = object ## SpreadSheet Object
+    name* : string ## Name of SpreadSheet
+    rows* : seq[Row] ## Seq of Rows of SpreadSheet
+    hasHeader* : bool ## Clarify whether a Header is present
+    header* : Row ## Header Row
+    longestItems* : seq[int] ## Holds the length of the longest item in each Column for smoother printing
+    longestRow* : int ## Holds the length of the longest Row so all rows can be normalised
+    permissions* : Table[string, Table[string, bool]] ## Holds editorial permissions for each user for each Column
 
-#################### OVERLOADING SECTION ###############################
 proc add*(this : Row, x : int) : Row =
+  ## Adds the given integer as integer Cell to the Row
   result = this
   result.items.add(newCell(x))
 
 proc add*(this : Row, x : float) : Row =
+  ## Adds the given float as float Cell to the Row
   result = this
   result.items.add(newCell(x))
 
 proc add*(this : Row, x : string) : Row =
+  ## Adds the given string as string Cell to the Row
   result = this
   result.items.add(newCell(x))
 
 proc add*(this : Row, x : Nil) : Row =
+  ## Adds the given NaN as NaN Cell to the Row
   result = this
   result.items.add(newCell(x))
 
-#################### OVERLOADING SECTION END ###############################
-
-# pad row with NaN-Cells
 proc padRow(row : var Row, diff : int)=
+  ## Fills row with NaN-cells until diff is reached
   for i in 0..diff-1:
     row = row.add(null)
 
-# SpreadSheet Constructor
-# TO-DO: Debloat this function such that the pretty-debug functionality happens
-# in a seperate function!
-# TO-DO: Ensure SpreadSheet Integrity via security checks!
-# --> This should be done via Empty Cell Entries
 proc newSpreadSheet*(name: string, rows: seq[Row], header : Row): SpreadSheet =
+  ## Create a New SpreadSheet with name, sequence of Rows and Header
   var hasHeader = false
   var lonRow = 0
+  # Check if a header is present
   if len(header.items) > 0:
     hasHeader = true
-
     # search for longest row to ensure integrity
     if len(header.items) > lonRow:
       lonRow = len(header.items)
@@ -127,7 +140,7 @@ proc newSpreadSheet*(name: string, rows: seq[Row], header : Row): SpreadSheet =
   for i, row in pairs(rows):
     # if the row is not the same lenght as the longest row
     if len(row.items) < lonRow:
-      # padRow
+      # padRow if needed
       padRow(copyRows[i], lonRow-len(row.items))
 
   if hasHeader:
@@ -159,21 +172,17 @@ proc newSpreadSheet*(name: string, rows: seq[Row], header : Row): SpreadSheet =
     result.permissions["UNIVERSAL"][entry.strVal] = true
 
 
-
-# helper function which takes a string and an integer
-# and pads the string with Spaces on both sides
-# until it is as long as the integer
 proc pad(input : string, padTo: int) : string =
+  ## helper function which takes a string and an integer
+  ## and pads the string with Spaces on both sides
+  ## until it is as long as the integer
   var goal = padTo 
   result = input
   for i in len(input)..goal:
     result = ' ' &  result 
 
-
-
-# Debugging proc for printing out SpreadSheet information
-# TO-DO: DO THIS BETTER!
 proc debugSpreadSheet*(SpreadSheet: SpreadSheet) = 
+  ## Shows Meta-Information and contents of SpreadSheet
   echo ""
   echo "Name:    ", SpreadSheet.name
   if len(SpreadSheet.rows)  == 0:
@@ -222,10 +231,8 @@ proc debugSpreadSheet*(SpreadSheet: SpreadSheet) =
   echo ""
   echo ""
 
-
-######################### OVERLOADING SECTION ################################
-
 proc `|` * (x : int, y : int) : Row = 
+  ## Combines two integer tow a Row of Integer Cells
   result = newRow(@[newCell(x), newCell(y)])
 
 proc `|` * (x : string, y : string) : Row = 
@@ -252,13 +259,11 @@ proc `|` * (x : int, y : Nil) : Row =
 proc `|` * (x : Nil, y : string) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
 
-
 proc `|` * (x : Row, y : int) : Row = 
   result = x.add(y)
 
 proc `|` * (x : int, y : Row) : Row = 
   result = y.add(x)
-
 
 proc `|` * (x : Row, y : string) : Row = 
   result = x.add(y)
@@ -288,13 +293,12 @@ proc `and` * (x : Row, y : Row) : seq[Row] =
   result = @[x, y]
 
 proc create * (SpreadSheet : SpreadSheet) : SpreadSheet =
+  ## Only needed for syntax reasons
   result = SpreadSheet
 
-#################### OVERLOADING SECTION END ###########################
-
-# take a SpreadSheet Object and create a JSON response from it
-# TO-DO: This implementation is not generic enough and has to be changed in the future!
 proc toJSONBody * (SpreadSheet : SpreadSheet) : JsonNode =
+    ## take a SpreadSheet Object and create a JSON response from it
+    ## This implementation is very specific to the google-sheets api
     var output : seq[seq[string]]
     # count no of rows
     var rowDepth = 0
@@ -328,13 +332,12 @@ proc toJSONBody * (SpreadSheet : SpreadSheet) : JsonNode =
     rangeString.add(ro)
     result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
     
-
-# interface to use debugSpreadSheet
 proc show*(SpreadSheet:SpreadSheet) =
+  ## interface to use debugSpreadSheet
   debugSpreadSheet(SpreadSheet)
 
-# helper function which returns the integer index of a header by name
 proc getColumnIndex(SpreadSheet : SpreadSheet, colName : string) : int =
+    ## helper function which returns the column index of a header by name
     var names : seq[string]
     for i in SpreadSheet.header.items:
       names.add(i.strVal)
@@ -344,59 +347,60 @@ proc getColumnIndex(SpreadSheet : SpreadSheet, colName : string) : int =
     else:
       raise newException(OSError, colName & " is not in Spreadsheet " & SpreadSheet.name)
 
-# Atomic Action: Delete Column
+
 proc removeColumn * (SpreadSheet : var SpreadSheet, toDelete : string) =
+  ## Atomic Action: Delete Column
   var found = getColumnIndex(SpreadSheet, toDelete)
   for i in 0..len(SpreadSheet.rows)-1:
     delete(SpreadSheet.rows[i].items, found)
   SpreadSheet.header.items.delete(found)
   SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
 
-# Atomic ACtion: Delete Column Operator
 proc `-=` * (SpreadSheet : var SpreadSheet, toDelete : string) =
+  ## Atomic ACtion: Delete Column Operator
   removeColumn(SpreadSheet, toDelete)
 
-# Atomic Action: Delete Column
 proc removeRow * (SpreadSheet : var SpreadSheet, toDelete : int) =
+  ## Atomic Action: Delete Row
   SpreadSheet.rows.delete(toDelete)
   SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
 
-
-# Atomic ACtion: Delete Row Operator
 proc `-=` * (SpreadSheet : var SpreadSheet, toDelete : int) =
+  ## Atomic ACtion: Delete Row Operator
   removeRow(SpreadSheet, toDelete)
 
-
-# Atomic Action : Rename SpreadSheet
 proc renameSpreadsheet * (SpreadSheet : var SpreadSheet, newName : string) = 
+  ## Atomic Action : Rename SpreadSheet
   SpreadSheet.name = newName
 
-# Atomic Action : Rename SpreadSheet Operator
 proc `:=` * (SpreadSheet : var SpreadSheet, newName : string) = 
+  ## Atomic Action : Rename SpreadSheet Operator
   renameSpreadsheet(SpreadSheet, newName)
 
-
-# Atomic Action : Rename Column
 proc renameColumn * (SpreadSheet : var SpreadSheet, oldName : string, newName : string) =
+  ## Atomic Action : Rename Column
   for i in 0..len(SpreadSheet.header.items)-1:
     if SpreadSheet.header.items[i].strVal == oldName:
       SpreadSheet.header.items[i] = newCell(newName)
   SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
 
-# index SpreadSheet
 proc `[]` * (SpreadSheet : SpreadSheet, r, c: int): Cell =
+  ## Returns Cell at given position
   result = SpreadSheet.rows[r].items[c] 
 
-
-# index SpreadSheet
 proc `[]` * (SpreadSheet : SpreadSheet, r : int, c: string): Cell =
+  ## Returns Cell at given position
   var colInd = getColumnIndex(SpreadSheet, c)
   result = SpreadSheet.rows[r].items[colInd] 
 
+proc `[]` * (SpreadSheet : SpreadSheet, name : string) : seq[string] =
+  ## Returns a seq[string] of strVal of all values in Column named name of SpreadSheet
+  var ind = getColumnIndex(SpreadSheet, name)
+  for row in SpreadSheet.rows:
+    result.add(row.items[ind].strVal)
 
-
-# Atomic Action: Add Column
 proc addColumn * (SpreadSheet : var SpreadSheet, name = "NaN", toAdd : Row) =
+  ## Atomic Action: Add Column
   SpreadSheet.header.items.add(newCell(name))
   for i, item in pairs(toAdd.items):
     case item.kind:
@@ -405,6 +409,14 @@ proc addColumn * (SpreadSheet : var SpreadSheet, name = "NaN", toAdd : Row) =
         of nkString: SpreadSheet.rows[i] = SpreadSheet.rows[i].add(item.strVal) 
         of nkEmpty: SpreadSheet.rows[i] =  SpreadSheet.rows[i].add(null) 
   SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
+
+proc len * (SpreadSheet : SpreadSheet) : int =
+  ## Returns number of rows of SpreadSheet
+  result = len(SpreadSheet.rows)
+
+proc colLen * (SpreadSheet : SpreadSheet) : int =
+  ## Returns number of columns of SpreadSheet
+  result = len(SpreadSheet.header.items)
 
 # Atomic Action: Add Row
 proc addRow * (SpreadSheet: var SpreadSheet, row : Row) =
@@ -424,13 +436,12 @@ proc setNewValue * (SpreadSheet : var SpreadSheet,  r : int, c: string, newValue
   var colInd = getColumnIndex(SpreadSheet, c)
   SpreadSheet.rows[r].items[colInd] = newCell(newValue)
 
-# Helper function which transforms SpreadSheet object to HashSpreadSheet
+
 proc toHash * (SpreadSheet : SpreadSheet, on : string) : Table[string, seq[Cell]] =
+  ## Helper function which transforms SpreadSheet object to HashSpreadSheet
   var ind = getColumnIndex(SpreadSheet, on)
   for i, row in pairs(SpreadSheet.rows):
     result[row.items[ind].strVal] = row.items
-
-
 
 proc joinSpreadSheets * (SpreadSheet1 : var SpreadSheet, SpreadSheet2 : SpreadSheet, on : string) =
   ## Atomic Action : Join SpreadSheets (INNER JOIN)
@@ -452,14 +463,14 @@ proc joinSpreadSheets * (SpreadSheet1 : var SpreadSheet, SpreadSheet2 : SpreadSh
   SpreadSheet1.removeColumn(on)
 
 # Atomic Actions: Set Permission for column in table
-proc setNewPermissions * (sheet : var SpreadSheet, role : string, forbid : seq[string]) =
+proc setNewPermissions * (sheet : var SpreadSheet, role : string, âllow : seq[string]) =
   sheet.permissions[role] = {"placeholder": true}.toTable
   sheet.permissions[role].del("placeholder")
-  for name in forbid:
-    sheet.permissions[role][name] = false
-
-  
-from asyncdispatch import waitFor
+  for name in âllow:
+    sheet.permissions[role][name] = true
+  for s in sheet.header.getValues():
+    if s notin âllow:
+      sheet.permissions[role][s] = false
 
 # Atomic Actions: Send Mail
 proc sendNewMail * (to : string, subject : string, content : string) =
@@ -469,25 +480,21 @@ proc sendNewMail * (to : string, subject : string, content : string) =
 proc sendNewFile * (to : string, subject : string, content : string, file : string) =
   waitFor( mailFunc.sendNewFile(mailBot, to, "John Doe", subject, content, file) )
 
-
 # Atomic Actions: Append Spreadsheet
 proc appendSheet * (sheet1 : var Spreadsheet, sheet2 : Spreadsheet) =
   for row in sheet2.rows:
     sheet1.addRow(row)
 
 # Atomic Actions: Create Webview
-import jester
 const REPLACETOKEN = " INSERT ROW HERE AT ME "
 const REPLACETOKENCELL = " INSERT CELL HERE AT ME "
-
 
 proc generateTH(cell : Cell, edit: bool) : string =
   ## Generates a HTML <th> from Cell
   if edit:
-    result = "<th contenteditable='true' id='cell'> " & cell.strVal & "</th>" & REPLACETOKENCELL
+    result = "<th contenteditable='true' id='cell' bgcolor='#98FFCD'> " & cell.strVal & "</th>" & REPLACETOKENCELL
   else:
-    result = "<th> " & cell.strVal & "</th>" & REPLACETOKENCELL
-
+    result = "<th bgcolor='#FF8484'> " & cell.strVal & "</th>" & REPLACETOKENCELL
 
 proc generateTR(row : Row, permissions : seq[bool]) : string =
   ## Generates a HTML <tr> from Row
@@ -502,7 +509,6 @@ proc generateTR(row : Row, permissions : seq[bool]) : string =
     result = result.replace(REPLACETOKENCELL, generateTH(cell, permissions[index]))
     
   result = result.replace(REPLACETOKENCELL, "")
-
 
 proc generateHTMLForm * (table : SpreadSheet, user : var = "UNIVERSAL") : string =
   ## takes a SpreadSheet object as input, parses it
@@ -554,6 +560,7 @@ proc generateHTMLForm * (table : SpreadSheet, user : var = "UNIVERSAL") : string
                       console.log(msg.data);
                         if(msg.data != "success")
                           alert(msg.data);
+                          window.location.reload(true); 
                       }
                   return true;
                 }
@@ -568,7 +575,6 @@ proc generateHTMLForm * (table : SpreadSheet, user : var = "UNIVERSAL") : string
   for row in table.rows:
     result = result.replace(REPLACETOKEN, generateTR(row, permissions))
   result = result.replace(REPLACETOKEN, "")
-
 
 proc generateHTMLView * (table : SpreadSheet, user : var = "UNIVERSAL") : string =
   ## takes a SpreadSheet object as input, parses it
@@ -606,31 +612,16 @@ proc generateHTMLView * (table : SpreadSheet, user : var = "UNIVERSAL") : string
     result = result.replace(REPLACETOKEN, generateTR(row, permissions))
   result = result.replace(REPLACETOKEN, "")
 
-
-
-import asyncdispatch, jester, os, strutils
-# returns a WebView of the Spreadsheet
-proc createNewWebView * (table : SpreadSheet, r : string) =
-  routes:
-    get "/":
-      var html = generateHTMLView(table)
-      resp html
-
-
-
-
 # takes a SpreadSheet and a Filename as input
 # and writes Spreadsheet to HTML format
 proc writeHTML * (table : SpreadSheet, fileName = "output.html") =
   var html = table.generateHTMLView()
   writeFile(fileName, html)
 
-import htmlparser
-import xmltree
-# takes html string as input
-# parses it for the first table
-# and returns it as spreadsheet
 proc fromHTML * (html : string) : SpreadSheet =
+  ## takes html string as input
+  ## parses it for the first table
+  ## and returns it as spreadsheet
   var xml = parseHtml(html)
   # get all table rows
   let query = xml.findAll("tr")
@@ -639,46 +630,82 @@ proc fromHTML * (html : string) : SpreadSheet =
     var row : Row
     for x in node:
       try:
-        if x.kind() == xnElement:
-          row.items.add(  newCell(  x.innerText()[1..len(x.innerText())-1] ) )
-      except FieldDefect:
+        try:
+          if x.kind() == xnElement:
+            row.items.add(  newCell(  x.innerText()[1..len(x.innerText())-1] ) )
+        except FieldDefect:
+          continue
+      except RangeDefect:
         continue
     outRows.add(row)
   result = newSpreadSheet("", outRows[1..len(outRows)-1], outRows[0])
 
+proc fromHTMLFile * (file : string) : SpreadSheet =
+  ## Reads a file from file location and returns
+  ## the first included HTML table as SpreadSheet
+  var html = readFile(file)
+  result = fromHTML(html)
+
+proc fromCSV * (csv : string) : SpreadSheet =
+  ## Takes a string which points to a valid .csv file
+  ## and reads the file into a SpreadSheet
+  var p : CsvParser
+  p.open(csv)
+  p.readHeaderRow()
+  var outRows : seq[Row]
+  var head : Row
+  for h in p.headers:
+    head = head.add(h)
+  while p.readRow():
+    var row : Row
+    for col in items(p.headers):
+      row = row.add(p.rowEntry(col))
+    outRows.add(row)
+
+  result = newSpreadSheet("", outRows, head)
 
 proc fromJSONString * (j : JsonNode) : SpreadSheet =
+  ## Reads SpreadSheet values from
+  ## JSONstring
+  ## Caution: This function is very specific to Google SpreadSheets
+  ## response! This might very likely not work for your case
   var outRows : seq[Row]
-  for entry in j["values"]:
-    var row : Row
-    for e in entry:
-      var s = $e
-      row.items.add(newCell(s[1..len(s)-2]))
-      
-    outRows.add(row)
+  try:
+    for entry in j["values"]:
+      var row : Row
+      for e in entry:
+        var s = $e
+        row.items.add(newCell(s[1..len(s)-2]))
+        
+      outRows.add(row)
+  except KeyError:
+    raise newException(KeyError, "Did you try to import an empty SpreadSheet?")
 
   result = newSpreadSheet("", outRows[1..len(outRows)-2], outRows[0])
 
-# Atomic Action read from googlesheets
 proc fromGoogleSheets * (id : string) : SpreadSheet =
+  
+  ## Atomic Action read from googlesheets
   var response = openSheet(id)
   result = fromJSONString(response)
 
+proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
+  ## Update a Spreadsheet through one of it's views based on identifying column "on"
+  var indexIndex = view.getColumnIndex(on) # Identifies the reference column
+  var origIndexIndex = toUpdate.getColumnIndex(on) # Identifies the reference column
+  for i, row in pairs(view.rows): # for every row in the view
+    for k, origRow in pairs(toUpdate.rows): # for every row in the original
+      if row.items[indexIndex].strVal == origRow.items[origIndexIndex].strVal:
+        for col in view.header.items:
+          var currIndex = view.getColumnIndex(col.strVal)
+          var currOrigIndex = toUpdate.getColumnIndex(col.strVal)
+          toUpdate.rows[k].items[currOrigIndex] = view.rows[i].items[currIndex]
 
-# Update a Spreadsheet through one of it's views
-proc update * (toUpdate : var SpreadSheet, view : SpreadSheet) =
-  var indexIndex = view.getColumnIndex("index")
-  for row in view.rows:
-    for col in view.header.items:
-      var viewInd = view.getColumnIndex(col.strVal)
-      if viewInd != indexIndex:
-        var origInd = toUpdate.getColumnIndex(col.strVal)
-        if toUpdate[parseInt(row.items[indexIndex].strVal), origInd].strVal != row.items[viewInd].strVal:
-          toUpdate.setNewValue(parseInt(row.items[indexIndex].strVal), col.strVal, row.items[viewInd].strVal)
-
-
-# Get View of Table
-proc view * (table : SpreadSheet, indRange : seq[int], colRange : seq[string]) : SpreadSheet =
+proc createView * (table : SpreadSheet, indRange : seq[int], colRange : seq[string], newName="") : SpreadSheet =
+  ## Takes Spreadsheet, indexRange and Range of names as input
+  ## And returns a view of the given SpreadSheet
+  ## Giving a newName is optional
+  ## Per default the name of original SpreadSheet will be taken and added with "-view"
   var colInd : seq[int]
   var newHead : Row
   var newRows : seq[Row]
@@ -695,30 +722,43 @@ proc view * (table : SpreadSheet, indRange : seq[int], colRange : seq[string]) :
     for c in colInd:
       newRow.items.add(table.rows[index].items[c])
     newRows.add(newRow)
-  return newSpreadSheet(fmt"{table.name}-View", newRows, newHead)
+  if newName == "":
+    return newSpreadSheet(fmt"{table.name}-View", newRows, newHead)
+  else:
+    return newSpreadSheet(newName, newRows, newHead)
 
-
-# Get View of Table only row selection
-proc view * (table : SpreadSheet, indRange : seq[int]) : SpreadSheet =
+proc createView * (table : SpreadSheet, indRange : seq[int], newName="") : SpreadSheet =
+  ## Row only Approach to Creating a View of a SpreadSheet
+  ## Giving a newName is optional
+  ## Per default the name of original SpreadSheet will be taken and added with "-view"
   var newRows : seq[Row]
 
   # create new rows
   for index in indRange:
     var newRow = table.rows[index]
     newRows.add(newRow)
-  return newSpreadSheet(fmt"{table.name}-View", newRows, table.header)
+  if newName == "":
+    return newSpreadSheet(fmt"{table.name}-View", newRows, table.header)
+  else:
+    return newSpreadSheet(newName, newRows, table.header)
 
-
-# Conditional view of table
-proc where * (table : SpreadSheet, col : string, op : string, val : string) : SpreadSheet =
+proc where * (table : SpreadSheet, col : string, op : string, val : string) : seq[int] =
+  ## Select Range of Rows from SpreadSheet based on whether condition is met on column col
+  ## Currently supported:
+  ## ==
+  ## !=
   var colInd = table.getColumnIndex(col)
-  var newRowsIndex : seq[int]
   for index, row in pairs(table.rows):
     case op:
       of "==":
         if row.items[colInd].strVal == val:
-          newRowsIndex.add(index)
+          result.add(index)
+      of "!=":
+        if row.items[colInd].strVal != val:
+          result.add(index)       
 
-  result = table.view(newRowsIndex)
+proc HTML * (s : string) =
+  return
 
-
+proc CSV * (s : string) = 
+  return

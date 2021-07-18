@@ -4,6 +4,7 @@ import googleapi
 import server
 import mailFunc
 from mailFunc import mailBot
+import metaapi
 type 
   Name* = object
     name* : string
@@ -51,6 +52,24 @@ proc newValue * (s : float) : float =
 proc newValue * (s : Nil) : Nil =
   result = s
   
+proc source*(s : SpreadSheet)=
+  return
+
+proc keep*(s : seq[int]) =
+  return 
+
+proc keep*(s : SpreadSheet)=
+  return
+
+proc columns*(s : seq[string]) =
+  return
+
+proc permits * (s : seq[string]) =
+  return
+
+proc user * (s : string) =
+  return
+
 # proc which generates new SpreadSheet
 proc newSpreadsheetGen*(name : Name, rows : seq[Row], header: Row): SpreadSheet = 
   result = newSpreadsheet(name.name, rows, header)
@@ -108,9 +127,30 @@ macro setPermissions * (table : untyped, statement: untyped) =
   for s in statement:
     case $s[0].ident:
       of "user":
-        user = s
+        user = s[1]
       of "permits":
-        permits = s
-  result = newCall("setNewPermissions", target, user, permits)
+        permits = s[1]
+  newCall("setNewPermissions", target, user, permits)
 
-export spreadsheets, server, googleapi
+
+macro view * (statement : untyped) : SpreadSheet =
+  ## Defines the Syntax for a call of createView
+  var source : NimNode
+  var keep : NimNode
+  var columns : NimNode
+  var gotColumns = false
+  for s in statement:
+    case $s[0]:
+      of "source":
+        source = s[1]
+      of "keep":
+        keep = s[1]
+      of "columns":
+        columns = s[1]
+        gotColumns = true
+  if gotColumns:
+    result = newCall("createView", source, keep, columns)
+  else:
+    result = newCall("createView", source, keep)
+
+export spreadsheets, server, googleapi, metaapi
