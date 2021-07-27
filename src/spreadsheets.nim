@@ -683,8 +683,7 @@ proc fromJSONString * (j : JsonNode) : SpreadSheet =
 
   result = newSpreadSheet("", outRows[1..len(outRows)-2], outRows[0])
 
-proc fromGoogleSheets * (id : string) : SpreadSheet =
-  
+proc fromGoogleSheets * (id : string) : SpreadSheet {.discardable.}  =
   ## Atomic Action read from googlesheets
   var response = openSheet(id)
   result = fromJSONString(response)

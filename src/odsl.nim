@@ -86,7 +86,7 @@ macro SendMail * (statement: untyped) =
   var attachement : NimNode
   var hasAttach = false
   for s in statement:
-    case $s[0].ident:
+    case s[0].strVal:
       of "to":
         target = s
       of "text":
@@ -109,7 +109,7 @@ macro setValue * (table : untyped, statement: untyped) =
   var column : NimNode
   var newValue : NimNode
   for s in statement:
-    case $s[0].ident:
+    case s[0].strVal:
       of "index":
         index = s
       of "column":
@@ -125,7 +125,7 @@ macro setPermissions * (table : untyped, statement: untyped) =
   var permits : NimNode
   var user : NimNode
   for s in statement:
-    case $s[0].ident:
+    case s[0].strVal:
       of "user":
         user = s[1]
       of "permits":
@@ -152,5 +152,62 @@ macro view * (statement : untyped) : SpreadSheet =
     result = newCall("createView", source, keep, columns)
   else:
     result = newCall("createView", source, keep)
+
+macro ONACCEPT * (statement : untyped) =
+  return
+
+macro ACCEPTIF * (statement : untyped) =
+  return
+
+macro ONSEND * (statement : untyped) =
+  return
+
+macro ALLOWEDIT * (statement : untyped) =
+  return
+
+proc AS * (statement : string) =
+  return
+
+macro LOAD * (statement : untyped) : SpreadSheet =
+  var iden : NimNode
+  var kind : NimNode
+  var creation : NimNode
+  for s in statement:
+    case s[0].strVal:
+      of "AS":
+        iden = s[1][0]
+      else:
+        creation = s
+  result = newCall("loadSpreadSheet", creation)
+  
+macro ADDVIEW * (statement : untyped) =
+  var name = newStrLitNode("")
+  var sheet : NimNode
+  for s in statement:
+    case s[0].strVal:
+      of "AS":
+        name = s[1]
+      of "LOAD":
+        sheet = s
+  result = newCall("addToServer", sheet, name, newStrLitNode("view"))
+
+
+macro ADDFORM * (statement : untyped) =
+  var name = newStrLitNode("")
+  var sheet : NimNode
+  for s in statement:
+    case s[0].strVal:
+      of "AS":
+        name = s[1]
+      of "LOAD":
+        sheet = s
+  result = newCall("addToServer", sheet, name, newStrLitNode("view"))
+   
+macro ONSERVER * (statement : untyped) =
+  ## Macro which indicates that all codeblocks inside
+  ## should be executed on an online ODSL-server
+  result = statement
+  discard statement
+
 
 export spreadsheets, server, googleapi, metaapi

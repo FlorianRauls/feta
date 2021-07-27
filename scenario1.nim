@@ -1,14 +1,13 @@
 import src/odsl
-
+#[
 # Pull a Spreadsheetfrom Google Sheets
 var slots = loadSpreadSheet:
     GoogleSheets:
         "1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c"
 
-# Define a proc which we will use for faster selection
 proc getEmptySlots * () : SpreadSheet =
-    ## Returns a view from the original SpreadSheet
-    ## Based on Empty values
+    ## Returns a view from the original SpreadSheet with condition:
+    ## E-Mail must be empty (not filled out yet)
     result = view:
         source:
             odslServer["400"]
@@ -55,10 +54,32 @@ proc applyChanges * (passed : SpreadSheet) =
     odslServer["400"] = copy
 
 
-
 # add an example main view to the server
 addToServer(slots, "400", "view")
 # add an example editor view to the server
 addToServer(getEmptySlots, "401", confirmRequirement, applyChanges, "Please fill out only one row and commit your answer one time!")
 # run the server
 serveServer()
+
+]#
+
+ONSERVER:
+    ADDVIEW:
+        LOAD:
+            GoogleSheets:
+                "1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c"
+        AS:
+            "400"
+    ADDFORM:
+        LOAD:
+            GoogleSheets:
+                "1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c"
+        AS:
+            "401"
+        ALLOWEDIT:
+            ["Date", "Time", "E-Mail"]
+        ONSEND:
+            ACCEPTIF:
+                len(commit.where("E-Mail", "!=", "-")) == 1
+            ONACCEPT:
+                UPDATE 400 with commit  

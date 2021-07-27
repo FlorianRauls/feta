@@ -1,24 +1,14 @@
 import src/odsl
-import src/dsl
 
-#[
-Multiple tables 
-    persons with properties 
+var overView = fromGoogleSheets("1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c")
 
-    Tel, adr, title, .. 
 
-    groups (institute, commission,…) 
+var relevant = view:
+    source:
+        overView
+    keep:
+        overView.where("E-Mail", "==", "-")
+    columns:
+        overView.header.getValues()
 
-    group memberships 
-
-Operations 
-    bulk import of persons from lsf 
-
-    distributed edits of persons and memberships 
-
-    different roles: individual institutes + deans office 
-
-    "views" 
-
-    read-only view or export 
-]#
+relevant.show()
