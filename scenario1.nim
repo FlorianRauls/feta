@@ -1,4 +1,7 @@
 import src/odsl
+
+###################### FINISHED FUNCTIONALITY DEMO ####################################
+
 #[
 # Pull a Spreadsheetfrom Google Sheets
 var slots = loadSpreadSheet:
@@ -62,6 +65,9 @@ addToServer(getEmptySlots, "401", confirmRequirement, applyChanges, "Please fill
 serveServer()
 
 ]#
+
+
+###################### UNFINISHED DSL DEMO ####################################
 
 ONSERVER:
     ADDVIEW:
