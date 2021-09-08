@@ -70,6 +70,18 @@ proc permits * (s : seq[string]) =
 proc user * (s : string) =
   return
 
+proc LENGTH * (s : SpreadSheet) : int =
+  ## DSL wrapper of len(spreadsheet) function
+  result = len(s)
+
+proc SHOW * (s : SpreadSheet) =
+  ## DSL wrapper of show(spreadsheet) function
+  show(s)
+
+proc WHERE * (spreadsheet : SpreadSheet, con1 : string, con2 : string, con3 : string) : seq[int] =
+  ## DSL wrapper of where(spreadsheet) function
+  result = where(spreadsheet, con1, con2, con3)
+
 # proc which generates new SpreadSheet
 proc newSpreadsheetGen*(name : Name, rows : seq[Row], header: Row): SpreadSheet = 
   result = newSpreadsheet(name.name, rows, header)
@@ -181,6 +193,7 @@ macro LOAD * (statement : untyped) : SpreadSheet =
   result = newCall("loadSpreadSheet", creation)
   
 macro ADDVIEW * (statement : untyped) =
+  ## Default Macro for adding views to a server execution
   var name = newStrLitNode("")
   var sheet : NimNode
   for s in statement:
@@ -193,15 +206,31 @@ macro ADDVIEW * (statement : untyped) =
 
 
 macro ADDFORM * (statement : untyped) =
+  ## Default Macro for adding forms to a server execution
   var name = newStrLitNode("")
-  var sheet : NimNode
+  var sheet = newProc(params=[ident("SpreadSheet")]) # Defaul proc which returns just an empty spreadsheet
+  var errorMessage = newStrLitNode("An error has occured. Please contact the host for further information") # Default Error Message
+  var restricEdits = newEmptyNode()
+  var confirmRequirement = newProc(params=[ident("bool"),newIdentDefs(ident("s"), ident("SpreadSheet"))]) # Default proc which triggers, to check valid forms
+  var applyChanges = newProc(params=[newEmptyNode(),newIdentDefs(ident("s"), ident("SpreadSheet"))]) # Default proc which triggers, when valid form is submitted
+
   for s in statement:
     case s[0].strVal:
       of "AS":
         name = s[1]
       of "LOAD":
-        sheet = s
-  result = newCall("addToServer", sheet, name, newStrLitNode("view"))
+        sheet = newProc(params=[ident("SpreadSheet")], body=s)
+      of "ALLOWEDIT":
+        restricEdits = s
+      of "ACCEPTIF":
+          confirmRequirement = newProc(params=[ident("bool"), newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1]) 
+      of "ONACCEPT":
+        applyChanges = newProc(params=[newEmptyNode(),newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1])
+
+
+  result = newCall("addFormToServer", sheet, name, confirmRequirement, applyChanges, errorMessage) # adds form to server
+  if restricEdits.kind() == nnkEmpty: # Restric editing rights
+    result.add(newCall("setNewPermissions", sheet, name, restricEdits))
    
 macro ONSERVER * (statement : untyped) =
   ## Macro which indicates that all codeblocks inside

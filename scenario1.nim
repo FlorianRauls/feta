@@ -83,9 +83,15 @@ ONSERVER:
         AS:
             "401"
         ALLOWEDIT:
-            ["Date", "Time", "E-Mail"]
-        ONSEND:
-            ACCEPTIF:
-                len(commit.where("E-Mail", "!=", "-")) == 1
-            ONACCEPT:
-                UPDATE 400 with commit  
+            @["Date", "Time", "E-Mail"]
+        ACCEPTIF:
+            if (len(COMMIT.WHERE("E-Mail", "!=", "-")) == 1):
+                return true
+            else:
+                return false
+        ONACCEPT:
+            UPDATE 400 with COMMIT  
+
+
+SHOW odslServer["401"]
+serveServer()

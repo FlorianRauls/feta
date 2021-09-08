@@ -44,7 +44,10 @@ proc `[]=` * (server : var CustomServer, id : string, spread : SpreadSheet) =
 proc `[]` * (server : var CustomServer, id : string) : SpreadSheet =
   ## Gets the id of desired SpreadSheet on server
   ## and returns the SpreadSheet
-  return server.route[id]
+  try:
+    return server.route[id]
+  except KeyError:
+    return server.procRoute[id]()
 
 router myrouter:
   get "/":
@@ -97,7 +100,7 @@ proc setPort * (port : int) =
   ## Takes a port number as input and initiates the HTTP-Server
   odslServer.settings = newSettings(port=port.Port)
 
-proc addToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
+proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
   odslServer.procRoute[id] = p
@@ -105,7 +108,7 @@ proc addToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : Spr
   odslServer.confirmRoute[id] = confirm
   odslServer.applyRoute[id] = apply
   odslServer.errorMessage[id] = error
-
+  
 proc addToServer*(table : SpreadSheet, id : string, typ = "function") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
