@@ -114,6 +114,11 @@ macro SendMail * (statement: untyped) =
     result = newCall("sendNewMail", target, subject, text)
 
 
+macro SPREADSHEET(statement : untyped) : SpreadSheet =
+  ## Macro for returning spreadsheets from logic
+  result = newCall("newSpreadsheetGen", statement[0], statement[2], statement[1])
+
+
 ## Macro for making Sending Mail more accessible
 macro setValue * (table : untyped, statement: untyped) =  
   var target = table
@@ -202,6 +207,8 @@ macro ADDVIEW * (statement : untyped) =
         name = s[1]
       of "LOAD":
         sheet = s
+      of "SPREADSHEET":
+        sheet = s
   result = newCall("addToServer", sheet, name, newStrLitNode("view"))
 
 
@@ -220,6 +227,8 @@ macro ADDFORM * (statement : untyped) =
         name = s[1]
       of "LOAD":
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
+      of "SPREADSHEET":
+        sheet = newProc(params=[ident("SpreadSheet")], body=s)
       of "ALLOWEDIT":
         restricEdits = s
       of "ACCEPTIF":
@@ -236,6 +245,7 @@ macro ONSERVER * (statement : untyped) =
   ## Macro which indicates that all codeblocks inside
   ## should be executed on an online ODSL-server
   result = statement
+  result.add(newCall("serveServer"))
   discard statement
 
 

@@ -71,9 +71,9 @@ serveServer()
 
 ONSERVER:
     ADDVIEW:
-        LOAD:
-            GoogleSheets:
-                "1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c"
+        SPREADSHEET:
+            "Name" | "E-Mail" | "ID"
+            "Hans Hansen" | "hansen@hans.hans" | "h4nS"
         AS:
             "400"
     ADDFORM:
@@ -90,8 +90,7 @@ ONSERVER:
             else:
                 return false
         ONACCEPT:
-            UPDATE 400 with COMMIT  
+            SHOW COMMIT 
 
 
 SHOW odslServer["401"]
-serveServer()
