@@ -22,16 +22,16 @@ macro values * (statement : untyped): seq[Row] =
 proc setName * (name : string) : Name =
   result.name = name
 
-proc to * (s : string) : string =
+proc TO * (s : string) : string =
   result = s
 
-proc attachement * (s : string) : string =
+proc ATTACHEMENT * (s : string) : string =
   result = s
 
-proc text * (s : string) : string =
+proc TEXT * (s : string) : string =
   result = s
 
-proc subject * (s : string) : string =
+proc SUBJECT * (s : string) : string =
   result = s
 
 proc index * (i : int) : int =
@@ -67,7 +67,10 @@ proc columns*(s : seq[string]) =
 proc permits * (s : seq[string]) =
   return
 
-proc user * (s : string) =
+proc USER * (s : string) =
+  return
+
+macro ROW * (statement : untyped) =
   return
 
 proc LENGTH * (s : SpreadSheet) : int =
@@ -78,18 +81,29 @@ proc SHOW * (s : SpreadSheet) =
   ## DSL wrapper of show(spreadsheet) function
   show(s)
 
+proc SHOW * (s : string) =
+  ## DSL wrapper of show(spreadsheet) function
+  show(odslServer[s])
+
 proc WHERE * (spreadsheet : SpreadSheet, con1 : string, con2 : string, con3 : string) : seq[int] =
   ## DSL wrapper of where(spreadsheet) function
   result = where(spreadsheet, con1, con2, con3)
 
-# proc which generates new SpreadSheet
+
 proc newSpreadsheetGen*(name : Name, rows : seq[Row], header: Row): SpreadSheet = 
+  ## Generate new Spreadsheet with given
+  ## name
+  ## rows
+  ## header
   result = newSpreadsheet(name.name, rows, header)
 
-# central macro which user can use
-macro spreadsheet * (statement: untyped): SpreadSheet =  
-  result = newCall("newSpreadsheetGen", statement[0], statement[2], statement[1])
-  
+proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet = 
+  ## Generate new Spreadsheet with given
+  ## name
+  ## rows
+  ## header
+  result = newSpreadsheet("", rows[1..len(rows)-2], rows[0])
+
 # Macro for making Sending Mail more accessible
 macro SendMail * (statement: untyped) =  
   var target : NimNode
@@ -99,13 +113,13 @@ macro SendMail * (statement: untyped) =
   var hasAttach = false
   for s in statement:
     case s[0].strVal:
-      of "to":
+      of "TO":
         target = s
-      of "text":
+      of "TEXT":
         text = s
-      of "subject":
+      of "SUBJECT":
         subject = s
-      of "attachement":
+      of "ATTACHEMENT":
         hasAttach = true
         attachement = s
   if hasAttach:
@@ -114,9 +128,12 @@ macro SendMail * (statement: untyped) =
     result = newCall("sendNewMail", target, subject, text)
 
 
-macro SPREADSHEET(statement : untyped) : SpreadSheet =
+macro CREATE_SPREADSHEET(statement : untyped) : SpreadSheet =
   ## Macro for returning spreadsheets from logic
-  result = newCall("newSpreadsheetGen", statement[0], statement[2], statement[1])
+  ## Atomic Action: Create Spreadsheet
+
+  result = newCall("newSpreadsheetGen", statement)
+  # result = newCall("newSpreadsheetGen", statement[0], statement[2], statement[1])
 
 
 ## Macro for making Sending Mail more accessible
@@ -207,7 +224,7 @@ macro ADDVIEW * (statement : untyped) =
         name = s[1]
       of "LOAD":
         sheet = s
-      of "SPREADSHEET":
+      of "CREATE_SPREADSHEET":
         sheet = s
   result = newCall("addToServer", sheet, name, newStrLitNode("view"))
 

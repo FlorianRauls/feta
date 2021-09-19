@@ -431,8 +431,9 @@ proc `:=` * (cell : var Cell, newEntry : string) =
   cell.strVal = newEntry
  # cell = newCell(newEntry)
 
-# Atomic Action : Update Value
+
 proc setNewValue * (SpreadSheet : var SpreadSheet,  r : int, c: string, newValue : string ) =
+  ## Atomic Action : Update Value
   var colInd = getColumnIndex(SpreadSheet, c)
   SpreadSheet.rows[r].items[colInd] = newCell(newValue)
 
