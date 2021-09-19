@@ -102,7 +102,7 @@ proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet =
   ## name
   ## rows
   ## header
-  result = newSpreadsheet("", rows[1..len(rows)-2], rows[0])
+  result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
 
 # Macro for making Sending Mail more accessible
 macro SendMail * (statement: untyped) =  
@@ -128,13 +128,10 @@ macro SendMail * (statement: untyped) =
     result = newCall("sendNewMail", target, subject, text)
 
 
-macro CREATE_SPREADSHEET(statement : untyped) : SpreadSheet =
+macro CREATE_SPREADSHEET*(statement : untyped) : SpreadSheet =
   ## Macro for returning spreadsheets from logic
   ## Atomic Action: Create Spreadsheet
-
   result = newCall("newSpreadsheetGen", statement)
-  # result = newCall("newSpreadsheetGen", statement[0], statement[2], statement[1])
-
 
 ## Macro for making Sending Mail more accessible
 macro setValue * (table : untyped, statement: untyped) =  
