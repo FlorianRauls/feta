@@ -104,8 +104,10 @@ proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet =
   ## header
   result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
 
-# Macro for making Sending Mail more accessible
+
 macro SendMail * (statement: untyped) =  
+  ## Macro for sending Mail
+  ## Atomic Action: Send email
   var target : NimNode
   var text : NimNode
   var subject : NimNode
@@ -128,13 +130,18 @@ macro SendMail * (statement: untyped) =
     result = newCall("sendNewMail", target, subject, text)
 
 
-macro CREATE_SPREADSHEET*(statement : untyped) : SpreadSheet =
+macro CREATE_SPREADSHEET * (statement : untyped) : SpreadSheet =
   ## Macro for returning spreadsheets from logic
   ## Atomic Action: Create Spreadsheet
   result = newCall("newSpreadsheetGen", statement)
 
-## Macro for making Sending Mail more accessible
+macro FROM_PROC * (statement : untyped) : proc() : SpreadSheet =
+  ## Macro for returning spreadsheet from logic
+  result = newProc(params=[ident("SpreadSheet")], body = statement)
+
+
 macro setValue * (table : untyped, statement: untyped) =  
+  ## Macro for making Sending Mail more accessible
   var target = table
   var index : NimNode
   var column : NimNode
@@ -200,6 +207,7 @@ proc AS * (statement : string) =
   return
 
 macro LOAD * (statement : untyped) : SpreadSheet =
+  ## Macro Interface for the Meta-API
   var iden : NimNode
   var kind : NimNode
   var creation : NimNode
@@ -234,7 +242,6 @@ macro ADDFORM * (statement : untyped) =
   var restricEdits = newEmptyNode()
   var confirmRequirement = newProc(params=[ident("bool"),newIdentDefs(ident("s"), ident("SpreadSheet"))]) # Default proc which triggers, to check valid forms
   var applyChanges = newProc(params=[newEmptyNode(),newIdentDefs(ident("s"), ident("SpreadSheet"))]) # Default proc which triggers, when valid form is submitted
-
   for s in statement:
     case s[0].strVal:
       of "AS":
@@ -243,18 +250,19 @@ macro ADDFORM * (statement : untyped) =
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
       of "SPREADSHEET":
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
+      of "FROM_PROC":
+        sheet = s
       of "ALLOWEDIT":
         restricEdits = s
       of "ACCEPTIF":
           confirmRequirement = newProc(params=[ident("bool"), newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1]) 
       of "ONACCEPT":
         applyChanges = newProc(params=[newEmptyNode(),newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1])
-
-
   result = newCall("addFormToServer", sheet, name, confirmRequirement, applyChanges, errorMessage) # adds form to server
   if restricEdits.kind() == nnkEmpty: # Restric editing rights
     result.add(newCall("setNewPermissions", sheet, name, restricEdits))
    
+
 macro ONSERVER * (statement : untyped) =
   ## Macro which indicates that all codeblocks inside
   ## should be executed on an online ODSL-server

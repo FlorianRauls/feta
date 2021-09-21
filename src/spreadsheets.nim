@@ -762,3 +762,9 @@ proc HTML * (s : string) =
 
 proc CSV * (s : string) = 
   return
+
+
+proc `[]` * (spreadSheet : SpreadSheet, selection : seq[int]) : SpreadSheet =
+  ## Returns the inputed SpreadSheet with a selection of rows
+  ## based on the indices in selection
+  result = createView(spreadSheet, selection, spreadsheet.name)

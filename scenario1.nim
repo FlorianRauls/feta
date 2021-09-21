@@ -4,15 +4,14 @@ import src/odsl
 
 ONSERVER:
     ADDVIEW:
-        CREATE_SPREADSHEET:
-            "Name" | "E-Mail" | "ID" and
-            "Hans Hansen" | "hansen@hans.hans" | "h4nS"
-        AS:
-            "400"
-    ADDFORM:
         LOAD:
             GoogleSheets:
                 "1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c"
+        AS:
+            "400"
+    ADDFORM:
+        FROM_PROC:
+            odslServer["400"][odslServer["400"].WHERE("E-Mail", "==", "-")]
         AS:
             "401"
         ALLOWEDIT:
@@ -24,6 +23,5 @@ ONSERVER:
                 return false
         ONACCEPT:
             SHOW COMMIT 
-
 
 SHOW "401"
