@@ -22,6 +22,6 @@ ONSERVER:
             else:
                 return false
         ONACCEPT:
-            SHOW COMMIT 
+            odslServer["400"].UPDATE(COMMIT, "Date")
 
 SHOW "401"
