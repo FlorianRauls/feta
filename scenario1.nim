@@ -22,6 +22,12 @@ ONSERVER:
             else:
                 return false
         ONACCEPT:
-            odslServer["400"].UPDATE(COMMIT, "Date")
+            var x = odslServer["400"]  
+            x.UPDATE(COMMIT, "Date")
+            odslServer["400"] = x
+
 
 SHOW "401"
+
+var x = CREATE_SPREADSHEET:
+    "Hi" | "I am Marc"

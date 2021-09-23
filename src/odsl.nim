@@ -104,6 +104,13 @@ proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet =
   ## header
   result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
 
+proc newSpreadsheetGen*(rows : Row): SpreadSheet = 
+  ## Generate new Spreadsheet with given
+  ## name
+  ## row
+  ## header
+  var x : seq[Row]
+  result = newSpreadsheet("", x, rows)
 
 macro SendMail * (statement: untyped) =  
   ## Macro for sending Mail
@@ -209,11 +216,13 @@ proc AS * (statement : string) =
 proc TO * (statement : string) =
   return
 
+proc UPDATE * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
+  ## DSL Interface for the host-API call update(toUpdate : var SpreadSheet, view : SpreadSheet, on = "index")
+  toUpdate.update(view, on)
 
 macro LOAD * (statement : untyped) : SpreadSheet =
   ## Macro Interface for Meta-API loading
   var iden : NimNode
-  var kind : NimNode
   var creation : NimNode
   for s in statement:
     case s[0].strVal:
@@ -227,7 +236,6 @@ macro LOAD * (statement : untyped) : SpreadSheet =
 macro SAVE * (statement : untyped) : SpreadSheet =
   ## Macro Interface for Meta-API saving
   var iden : NimNode
-  var kind : NimNode
   var creation : NimNode
   for s in statement:
     case s[0].strVal:
@@ -235,7 +243,7 @@ macro SAVE * (statement : untyped) : SpreadSheet =
         iden = s[1][0]
       else:
         creation = s
-  result = newCall("saveSpreadSheet", creation, to)
+  result = newCall("saveSpreadSheet", creation, iden)
 
   
 macro ADDVIEW * (statement : untyped) =

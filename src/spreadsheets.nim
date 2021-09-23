@@ -689,7 +689,7 @@ proc fromGoogleSheets * (id : string) : SpreadSheet {.discardable.}  =
   var response = openSheet(id)
   result = fromJSONString(response)
 
-proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") : SpreadSheet =
+proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
   ## Update a Spreadsheet through one of it's views based on identifying column "on"
   var indexIndex = view.getColumnIndex(on) # Identifies the reference column
   var origIndexIndex = toUpdate.getColumnIndex(on) # Identifies the reference column
@@ -700,6 +700,7 @@ proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") : S
           var currIndex = view.getColumnIndex(col.strVal)
           var currOrigIndex = toUpdate.getColumnIndex(col.strVal)
           toUpdate.rows[k].items[currOrigIndex] = view.rows[i].items[currIndex]
+
 
 proc createView * (table : SpreadSheet, indRange : seq[int], colRange : seq[string], newName="") : SpreadSheet =
   ## Takes Spreadsheet, indexRange and Range of names as input
@@ -756,6 +757,7 @@ proc where * (table : SpreadSheet, col : string, op : string, val : string) : se
       of "!=":
         if row.items[colInd].strVal != val:
           result.add(index)       
+
 
 proc HTML * (s : string) =
   return

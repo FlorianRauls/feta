@@ -123,21 +123,3 @@ proc startServer () {.async.} =
 proc serveServer * () =
   ## Initiates the Jester Server
   waitFor(startServer())
-
-
-#[
-
-var server = newServer(8080)
-server.addRoute("main", "view", table)
-for row in students.rows:
-  server.addRoute:
-    path: 
-      row["id"]
-    kind:
-      "form"
-    data: 
-      table.where("E-Mail", "==", "-"))
-    onSubmit:
-      server["main"].update(data)
-      sendNewMail(row["e-mail"]...)
-]#
