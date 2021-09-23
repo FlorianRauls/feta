@@ -64,10 +64,12 @@ Spreadsheet -= "Max Maxson"
 Create mySpreadsheet: 
     - named: "Organization"
     - values:
-        - "Max Maxson" | 35 | "example@mail-address.de" | 3782.35
-        - "Jennifer Jennifson" | 22 | "also@mail-address.de" | 10783.00
-        - "Christine Christensen" | 45 | "beispiel@mail-address.de" | 35.89
-        - "Karl Karlson" | 27 | "definitiv_eine_mail_adresse@mail-address.de" | 6472.91
+        - "Max Maxson" | 35 |3782.35
+        - "Jennifer Jennifson" | 22 | 10783.00
+        - "Christine Christensen" | 45 | 35.89
+        - "Karl Karlson" | 27 | 6472.91
+Send mySpreadsheet to: email1, email2, email3
+
 
 ## DISCUSSION:
 

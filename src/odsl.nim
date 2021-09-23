@@ -206,8 +206,12 @@ macro ALLOWEDIT * (statement : untyped) =
 proc AS * (statement : string) =
   return
 
+proc TO * (statement : string) =
+  return
+
+
 macro LOAD * (statement : untyped) : SpreadSheet =
-  ## Macro Interface for the Meta-API
+  ## Macro Interface for Meta-API loading
   var iden : NimNode
   var kind : NimNode
   var creation : NimNode
@@ -218,6 +222,21 @@ macro LOAD * (statement : untyped) : SpreadSheet =
       else:
         creation = s
   result = newCall("loadSpreadSheet", creation)
+
+
+macro SAVE * (statement : untyped) : SpreadSheet =
+  ## Macro Interface for Meta-API saving
+  var iden : NimNode
+  var kind : NimNode
+  var creation : NimNode
+  for s in statement:
+    case s[0].strVal:
+      of "TO":
+        iden = s[1][0]
+      else:
+        creation = s
+  result = newCall("saveSpreadSheet", creation, to)
+
   
 macro ADDVIEW * (statement : untyped) =
   ## Default Macro for adding views to a server execution

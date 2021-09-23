@@ -689,7 +689,7 @@ proc fromGoogleSheets * (id : string) : SpreadSheet {.discardable.}  =
   var response = openSheet(id)
   result = fromJSONString(response)
 
-proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
+proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") : SpreadSheet =
   ## Update a Spreadsheet through one of it's views based on identifying column "on"
   var indexIndex = view.getColumnIndex(on) # Identifies the reference column
   var origIndexIndex = toUpdate.getColumnIndex(on) # Identifies the reference column
