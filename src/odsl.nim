@@ -89,6 +89,49 @@ proc WHERE * (spreadsheet : SpreadSheet, con1 : string, con2 : string, con3 : st
   ## DSL wrapper of where(spreadsheet) function
   result = where(spreadsheet, con1, con2, con3)
 
+macro ADDROW * (spreadsheet : var SpreadSheet, statement : untyped) =
+  ## DSL interface for addRow(spreadsheet, row)
+  result = newStmtList()
+  for s in statement:
+    result.add(newCall("addRow", spreadsheet, s))
+
+macro REMOVEROW * (spreadsheet : var SpreadSheet, statement : untyped) =
+  ## DSL interface for removeRow(spreadsheet, integer)
+  result = newStmtList()
+  for s in statement:
+    result.add(newCall("removeRow", spreadsheet, s))
+
+macro INSERT * (row : var Row, statement : untyped) =
+  ## DSL interface for add(row, value)
+  result = newStmtList()
+  for s in statement:
+    result.add(newCall("add", row, s))
+
+macro REMOVECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
+  ## DSL interface for removeColumn(spreadSheet, column)
+  result = newStmtList()
+  for s in statement:
+    result.add(newCall("removeColumn", sheet, s))
+
+macro RENAMECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
+  ## DSL interface for renameColumn(spreadsheet, oldName, newName)
+  var oldName : NimNode
+  var newName : NimNode
+
+  for s in statement:
+    case s[0].strVal:
+      of "FROM":
+        oldName = s[1]
+      of "TO":
+        newName = s[1]
+      else:
+        raise newException(KeyError, "Unknown keyword")
+  result = newCall("renameColumn", sheet, oldName, newName)
+
+macro ADDCOLUMN * (sheet : var SpreadSheet, statement : untyped) =
+  ## DSL interface for addColumn(spreadsheet, name, row)
+  result = statement
+
 
 proc newSpreadsheetGen*(name : Name, rows : seq[Row], header: Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
@@ -112,7 +155,7 @@ proc newSpreadsheetGen*(rows : Row): SpreadSheet =
   var x : seq[Row]
   result = newSpreadsheet("", x, rows)
 
-macro SendMail * (statement: untyped) =  
+macro SENDMAIL * (statement: untyped) =  
   ## Macro for sending Mail
   ## Atomic Action: Send email
   var target : NimNode

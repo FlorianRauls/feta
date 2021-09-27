@@ -47,7 +47,8 @@ proc newCell*(value: float): Cell =
 proc newCell*(value: Nil): Cell =
   ## Creates a new NaN-Cell
   result = Cell(kind: nkEmpty, strVal: "-")
-     
+
+
 #[ Implementation of the generic Row class
 which will be the center and target of most language features]#
 type 
@@ -102,7 +103,7 @@ proc add*(this : Row, x : Nil) : Row =
   result.items.add(newCell(x))
 
 proc padRow(row : var Row, diff : int)=
-  ## Fills row with NaN-cells until diff is reached
+  ## Fills row with NaN-cells until it has lenght of diff
   for i in 0..diff-1:
     row = row.add(null)
 

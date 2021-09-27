@@ -1,7 +1,6 @@
 import src/odsl
 
 ###################### DSL DEMO ####################################
-
 ONSERVER:
     ADDVIEW:
         LOAD:
@@ -28,6 +27,3 @@ ONSERVER:
 
 
 SHOW "401"
-
-var x = CREATE_SPREADSHEET:
-    "Hi" | "I am Marc"
