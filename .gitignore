@@ -22,3 +22,4 @@ feta/htmldocs/dochack.js
 feta/files/userData.nim
 *.html
 feta/files/userData.nim
+*.json

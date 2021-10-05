@@ -7,7 +7,7 @@ import json
 from files/userData import userMail
 
 # location of odsl-service worker json for google authorization
-var name = "./src/files/odsl-316010-9ac42c4cd821.json"
+var name = "./src/files/odsl-316010-80a90228e51a.json"
 
 echo ""
 echo "Initalizing your Google Account..."
