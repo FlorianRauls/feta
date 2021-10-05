@@ -1,6 +1,0 @@
-odslServer	server.html#odslServer	server: odslServer	
-parseResult	server.html#parseResult,JsonNode	server: parseResult(received: JsonNode): SpreadSheet	
-`[]`	server.html#[],CustomServer,string	server: `[]`(server: var CustomServer; id: string): SpreadSheet	
-initServer	server.html#initServer,int	server: initServer(port: int)	
-addToServer	server.html#addToServer,SpreadSheet,string,string	server: addToServer(table: SpreadSheet; id: string; typ = &quot;function&quot;)	
-serveServer	server.html#serveServer	server: serveServer()	

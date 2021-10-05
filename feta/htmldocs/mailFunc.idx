@@ -1,3 +1,0 @@
-Mailer	mailFunc.html#Mailer	mailFunc: Mailer	
-newMailer	mailFunc.html#newMailer,string,string,string,string,string,string	mailFunc: newMailer(address, port, myAddress, myName, username, password: string): Mailer	
-mailBot	mailFunc.html#mailBot	mailFunc: mailBot	
