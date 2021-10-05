@@ -5,7 +5,6 @@ htmldocs/
 !/**/
 !*.*
 feta/files/odsl-316010-9ac42c4cd821.json
-feta/files/userData.nim
 *.txt
 feta/htmldocs/spreadsheets.idx
 feta/htmldocs/spreadsheets.html
