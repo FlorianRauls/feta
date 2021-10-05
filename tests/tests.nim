@@ -1,5 +1,5 @@
 import unittest
-import ../src/feta
+import ../feta
 
 test "create string cell":
     var testCell = newCell("test")

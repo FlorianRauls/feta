@@ -1,10 +1,10 @@
 import macros
-import spreadsheets
-import googleapi
-import server
-import mailFunc
-from mailFunc import mailBot
-import metaapi
+import feta/spreadsheets
+import feta/googleapi
+import feta/server
+import feta/mailFunc
+from feta/mailFunc import mailBot
+import feta/metaapi
 type 
   Name* = object
     name* : string
