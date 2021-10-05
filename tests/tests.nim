@@ -1,5 +1,5 @@
 import unittest
-import ../src/odsl
+import ../src/feta
 
 test "create string cell":
     var testCell = newCell("test")
