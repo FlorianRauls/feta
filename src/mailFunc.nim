@@ -2,6 +2,9 @@ from files/userData import userMail, userMailWord , targetMailTest, targetMailNa
 import asyncdispatch, logging, smtp, strformat, strutils, mime
 
 type Mailer* = object
+  ## Mailer which holds necessary information for sending emails
+  ## type objects need to hold usernames and passwords
+  ## which might be a security risk!
   address: string
   port: Port
   myAddress: string
@@ -10,6 +13,7 @@ type Mailer* = object
   password: string
   
 proc newMailer*(address, port, myAddress, myName, username, password: string): Mailer =
+  ## Constructer for Mailer type
   result = Mailer(
     address: address,
     port: port.parseInt.Port,
@@ -20,27 +24,40 @@ proc newMailer*(address, port, myAddress, myName, username, password: string): M
   )
 
 proc sendNewMail*(m: Mailer, to, toName, subject, body: string) {.async.} =
-    let
-        toList = @[fmt"{to}"]
-        msg = createMessage(subject, body, toList, @[], [
-        ("From", fmt"{m.myAddress}"),
-        ("MIME-Version", "1.0"),
-        ("Content-Type", "text/plain"),
-        ])
+  ## central function for the sending of emails through the Mailer type
+  ## Takes string inputs:
+  ## to: email address of target
+  ## toName: name of target
+  ## subject: subject line of mail
+  ## body: message text
+  let
+      toList = @[fmt"{to}"]
+      msg = createMessage(subject, body, toList, @[], [
+      ("From", fmt"{m.myAddress}"),
+      ("MIME-Version", "1.0"),
+      ("Content-Type", "text/plain"),
+      ])
 
-    var client = newAsyncSmtp(useSsl = true, debug=true)
-    await client.connect(m.address, m.port)
-    await client.auth(m.username, m.password)
-    echo ""
-    echo ""
-    echo $msg
-    echo ""
-    echo ""
-    await client.sendMail(fmt"{m.myAddress}", toList, $msg)
-    info "sent email to: ", to, " about: ", subject
-    await client.close()
+  var client = newAsyncSmtp(useSsl = true, debug=true)
+  await client.connect(m.address, m.port)
+  await client.auth(m.username, m.password)
+  echo ""
+  echo ""
+  echo $msg
+  echo ""
+  echo ""
+  await client.sendMail(fmt"{m.myAddress}", toList, $msg)
+  info "sent email to: ", to, " about: ", subject
+  await client.close()
 
 proc sendNewFile* (m: Mailer, to, toName, subject, body: string, file : string) {.async.} =
+  ## central function for the sending of emails with attached files through the Mailer type
+  ## Takes string inputs:
+  ## to: email address of target
+  ## toName: name of target
+  ## subject: subject line of mail
+  ## body: message text
+  ## file: location of file to be send
   var attachement = newAttachment(readFile(file), filename = file)
   let
       toList = @[fmt"{to}"]
