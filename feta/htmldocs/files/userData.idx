@@ -1,0 +1,6 @@
+userMail	files/userData.html#userMail	userData: userMail	
+userMailWord	files/userData.html#userMailWord	userData: userMailWord	
+targetMailTest	files/userData.html#targetMailTest	userData: targetMailTest	
+targetMailNameTest	files/userData.html#targetMailNameTest	userData: targetMailNameTest	
+smtpServer	files/userData.html#smtpServer	userData: smtpServer	
+smtpServerPort	files/userData.html#smtpServerPort	userData: smtpServerPort	

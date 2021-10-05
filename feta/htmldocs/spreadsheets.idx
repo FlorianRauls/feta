@@ -1,0 +1,73 @@
+Nil	spreadsheets.html#Nil	spreadsheets: Nil	
+null	spreadsheets.html#null	spreadsheets: null	
+nkInt	spreadsheets.html#nkInt	CellKind.nkInt	
+nkFloat	spreadsheets.html#nkFloat	CellKind.nkFloat	
+nkString	spreadsheets.html#nkString	CellKind.nkString	
+nkEmpty	spreadsheets.html#nkEmpty	CellKind.nkEmpty	
+CellKind	spreadsheets.html#CellKind	spreadsheets: CellKind	
+Cell	spreadsheets.html#Cell	spreadsheets: Cell	
+newCell	spreadsheets.html#newCell,string	spreadsheets: newCell(value: string): Cell	
+newCell	spreadsheets.html#newCell,int	spreadsheets: newCell(value: int): Cell	
+newCell	spreadsheets.html#newCell,float	spreadsheets: newCell(value: float): Cell	
+newCell	spreadsheets.html#newCell,Nil	spreadsheets: newCell(value: Nil): Cell	
+Row	spreadsheets.html#Row	spreadsheets: Row	
+newRow	spreadsheets.html#newRow,seq[Cell]	spreadsheets: newRow(items: seq[Cell]): Row	
+header	spreadsheets.html#header,Row	spreadsheets: header(row: Row): Row	
+SpreadSheet	spreadsheets.html#SpreadSheet	spreadsheets: SpreadSheet	
+add	spreadsheets.html#add,Row,int	spreadsheets: add(this: Row; x: int): Row	
+add	spreadsheets.html#add,Row,float	spreadsheets: add(this: Row; x: float): Row	
+add	spreadsheets.html#add,Row,string	spreadsheets: add(this: Row; x: string): Row	
+add	spreadsheets.html#add,Row,Nil	spreadsheets: add(this: Row; x: Nil): Row	
+`|`	spreadsheets.html#|,int,int	spreadsheets: `|`(x: int; y: int): Row	
+`|`	spreadsheets.html#|,string,string	spreadsheets: `|`(x: string; y: string): Row	
+`|`	spreadsheets.html#|,float,float	spreadsheets: `|`(x: float; y: float): Row	
+`|`	spreadsheets.html#|,int,string	spreadsheets: `|`(x: int; y: string): Row	
+`|`	spreadsheets.html#|,string,int	spreadsheets: `|`(x: string; y: int): Row	
+`|`	spreadsheets.html#|,Nil,int	spreadsheets: `|`(x: Nil; y: int): Row	
+`|`	spreadsheets.html#|,string,Nil	spreadsheets: `|`(x: string; y: Nil): Row	
+`|`	spreadsheets.html#|,int,Nil	spreadsheets: `|`(x: int; y: Nil): Row	
+`|`	spreadsheets.html#|,Nil,string	spreadsheets: `|`(x: Nil; y: string): Row	
+`|`	spreadsheets.html#|,Row,int	spreadsheets: `|`(x: Row; y: int): Row	
+`|`	spreadsheets.html#|,int,Row	spreadsheets: `|`(x: int; y: Row): Row	
+`|`	spreadsheets.html#|,Row,string	spreadsheets: `|`(x: Row; y: string): Row	
+`|`	spreadsheets.html#|,string,Row	spreadsheets: `|`(x: string; y: Row): Row	
+`|`	spreadsheets.html#|,Row,float	spreadsheets: `|`(x: Row; y: float): Row	
+`|`	spreadsheets.html#|,float,Row	spreadsheets: `|`(x: float; y: Row): Row	
+`|`	spreadsheets.html#|,Nil,Row	spreadsheets: `|`(x: Nil; y: Row): Row	
+`|`	spreadsheets.html#|,Row,Nil	spreadsheets: `|`(x: Row; y: Nil): Row	
+`and`	spreadsheets.html#and,seq[Row],Row	spreadsheets: `and`(x: seq[Row]; y: Row): seq[Row]	
+`and`	spreadsheets.html#and,Row,Row	spreadsheets: `and`(x: Row; y: Row): seq[Row]	
+create	spreadsheets.html#create,SpreadSheet	spreadsheets: create(SpreadSheet: SpreadSheet): SpreadSheet	
+toJSONBody	spreadsheets.html#toJSONBody,SpreadSheet	spreadsheets: toJSONBody(SpreadSheet: SpreadSheet): JsonNode	
+show	spreadsheets.html#show,SpreadSheet	spreadsheets: show(SpreadSheet: SpreadSheet)	
+removeColumn	spreadsheets.html#removeColumn,SpreadSheet,string	spreadsheets: removeColumn(SpreadSheet: var SpreadSheet; toDelete: string)	
+`-=`	spreadsheets.html#-=,SpreadSheet,string	spreadsheets: `-=`(SpreadSheet: var SpreadSheet; toDelete: string)	
+removeRow	spreadsheets.html#removeRow,SpreadSheet,int	spreadsheets: removeRow(SpreadSheet: var SpreadSheet; toDelete: int)	
+`-=`	spreadsheets.html#-=,SpreadSheet,int	spreadsheets: `-=`(SpreadSheet: var SpreadSheet; toDelete: int)	
+renameSpreadsheet	spreadsheets.html#renameSpreadsheet,SpreadSheet,string	spreadsheets: renameSpreadsheet(SpreadSheet: var SpreadSheet; newName: string)	
+`:=`	spreadsheets.html#:=,SpreadSheet,string	spreadsheets: `:=`(SpreadSheet: var SpreadSheet; newName: string)	
+renameColumn	spreadsheets.html#renameColumn,SpreadSheet,string,string	spreadsheets: renameColumn(SpreadSheet: var SpreadSheet; oldName: string; newName: string)	
+`[]`	spreadsheets.html#[],SpreadSheet,int,int	spreadsheets: `[]`(SpreadSheet: SpreadSheet; r, c: int): Cell	
+`[]`	spreadsheets.html#[],SpreadSheet,int,string	spreadsheets: `[]`(SpreadSheet: SpreadSheet; r: int; c: string): Cell	
+`[]`	spreadsheets.html#[],SpreadSheet,string	spreadsheets: `[]`(SpreadSheet: SpreadSheet; name: string): seq[string]	
+len	spreadsheets.html#len,SpreadSheet	spreadsheets: len(SpreadSheet: SpreadSheet): int	
+colLen	spreadsheets.html#colLen,SpreadSheet	spreadsheets: colLen(SpreadSheet: SpreadSheet): int	
+addRow	spreadsheets.html#addRow,SpreadSheet,Row	spreadsheets: addRow(SpreadSheet: var SpreadSheet; row: Row)	
+`+=`	spreadsheets.html#+=,SpreadSheet,Row	spreadsheets: `+=`(SpreadSheet: var SpreadSheet; row: Row)	
+`:=`	spreadsheets.html#:=,Cell,string	spreadsheets: `:=`(cell: var Cell; newEntry: string)	
+setNewValue	spreadsheets.html#setNewValue,SpreadSheet,int,string,string	spreadsheets: setNewValue(SpreadSheet: var SpreadSheet; r: int; c: string; newValue: string)	
+joinSpreadSheets	spreadsheets.html#joinSpreadSheets,SpreadSheet,SpreadSheet,string	spreadsheets: joinSpreadSheets(SpreadSheet1: var SpreadSheet; SpreadSheet2: SpreadSheet;\n                 on: string)	
+sendNewMail	spreadsheets.html#sendNewMail,string,string,string	spreadsheets: sendNewMail(to: string; subject: string; content: string)	
+sendNewFile	spreadsheets.html#sendNewFile,string,string,string,string	spreadsheets: sendNewFile(to: string; subject: string; content: string; file: string)	
+appendSheet	spreadsheets.html#appendSheet,SpreadSheet,SpreadSheet	spreadsheets: appendSheet(sheet1: var SpreadSheet; sheet2: SpreadSheet)	
+generateHTMLForm	spreadsheets.html#generateHTMLForm,SpreadSheet,var	spreadsheets: generateHTMLForm(table: SpreadSheet; user: var = &quot;UNIVERSAL&quot;): string	
+generateHTMLView	spreadsheets.html#generateHTMLView,SpreadSheet,var	spreadsheets: generateHTMLView(table: SpreadSheet; user: var = &quot;UNIVERSAL&quot;): string	
+createNewWebView	spreadsheets.html#createNewWebView,SpreadSheet,string	spreadsheets: createNewWebView(table: SpreadSheet; r: string)	
+writeHTML	spreadsheets.html#writeHTML,SpreadSheet,string	spreadsheets: writeHTML(table: SpreadSheet; fileName = &quot;output.html&quot;)	
+fromHTML	spreadsheets.html#fromHTML,string	spreadsheets: fromHTML(html: string): SpreadSheet	
+fromJSONString	spreadsheets.html#fromJSONString,JsonNode	spreadsheets: fromJSONString(j: JsonNode): SpreadSheet	
+fromGoogleSheets	spreadsheets.html#fromGoogleSheets,string	spreadsheets: fromGoogleSheets(id: string): SpreadSheet	
+update	spreadsheets.html#update,SpreadSheet,SpreadSheet,string	spreadsheets: update(toUpdate: var SpreadSheet; view: SpreadSheet; on = &quot;index&quot;)	
+view	spreadsheets.html#view,SpreadSheet,seq[int],seq[string]	spreadsheets: view(table: SpreadSheet; indRange: seq[int]; colRange: seq[string]): SpreadSheet	
+view	spreadsheets.html#view,SpreadSheet,seq[int]	spreadsheets: view(table: SpreadSheet; indRange: seq[int]): SpreadSheet	
+where	spreadsheets.html#where,SpreadSheet,string,string,string	spreadsheets: where(table: SpreadSheet; col: string; op: string; val: string): SpreadSheet	

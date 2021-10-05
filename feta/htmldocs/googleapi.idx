@@ -1,0 +1,4 @@
+openSheet	googleapi.html#openSheet,string	googleapi: openSheet(name: string): JsonNode	
+writeGoogleSheet	googleapi.html#writeGoogleSheet,JsonNode,string	googleapi: writeGoogleSheet(sheet: JsonNode; id: string)	
+shareGoogleSheet	googleapi.html#shareGoogleSheet,string,string,string	googleapi: shareGoogleSheet(id: string; mail: string; permission: string): Future[JsonNode]	
+createNewGoogleSheet	googleapi.html#createNewGoogleSheet,string	googleapi: createNewGoogleSheet(title: string): Future[JsonNode]	
