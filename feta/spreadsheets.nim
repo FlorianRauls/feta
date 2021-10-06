@@ -242,6 +242,14 @@ proc `|` * (x : string, y : string) : Row =
 proc `|` * (x : float, y : float) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
 
+proc `|` * (x : int, y : float) : Row = 
+  ## Combines two integer tow a Row of Integer Cells
+  result = newRow(@[newCell(x), newCell(y)])
+
+proc `|` * (x : float, y : int) : Row = 
+  ## Combines two integer tow a Row of Integer Cells
+  result = newRow(@[newCell(x), newCell(y)])
+
 proc `|` * (x : int, y : string) : Row = 
   result = newRow(@[newCell(x), newCell(y)])
 
@@ -283,6 +291,9 @@ proc `|` * (x : Nil, y : Row) : Row =
 
 proc `|` * (x : Row, y : Nil) : Row = 
   result = x.add(y)
+
+proc `|` * (x : Nil, y : Nil) : Row = 
+  result = newRow(@[newCell(x), newCell(y)])
 
 proc `|` * (x : Row, y : Row) : Row = 
   result.items = x.items.concat(y.items)

@@ -80,4 +80,9 @@ proc sendNewFile* (m: Mailer, to, toName, subject, body: string, file : string) 
   info "sent email to: ", to, " about: ", subject
   await client.close()
 
-var mailBot * = newMailer(smtpServer, smtpServerPort, userMail, targetMailNameTest, userMail, userMailWord)
+var mailBot* : Mailer
+
+try:  
+  mailBot = newMailer(smtpServer, smtpServerPort, userMail, targetMailNameTest, userMail, userMailWord)
+except ValueError:
+  echo "Initalization of mail functionalities failed. Did you insert your data into ./files/userData.nim?"

@@ -5,22 +5,26 @@ import feta/server
 import feta/mailFunc
 from feta/mailFunc import mailBot
 import feta/metaapi
-type 
-  Name* = object
-    name* : string
-## macro which reads multiline row statements
-## and constructs seq[Row] from them
 
+## The following statements are all used to create valid FETA-language constructs.
+## They do however not have any functional use.
+macro ONACCEPT * (statement : untyped) =
+  return
 
-macro values * (statement : untyped): seq[Row] =
-    var start = statement[0]
-    for index, row in pairs(statement[0..len(statement)-2]):
-        start = newCall("and", start, statement[index+1])
-    result = start
+macro ACCEPTIF * (statement : untyped) =
+  return
 
-# constructs Name type
-proc setName * (name : string) : Name =
-  result.name = name
+macro ONSEND * (statement : untyped) =
+  return
+
+macro ALLOWEDIT * (statement : untyped) =
+  return
+
+proc AS * (statement : string) =
+  return
+
+proc TO * (statement : string) =
+  return
 
 proc TO * (s : string) : string =
   result = s
@@ -34,60 +38,32 @@ proc TEXT * (s : string) : string =
 proc SUBJECT * (s : string) : string =
   result = s
 
-proc index * (i : int) : int =
-  result = i
-
-proc column * (s : string) : string =
-  result = s
-
-proc newValue * (s : string) : string =
-  result = s
-
-proc newValue * (s : int) : int =
-  result = s
-
-proc newValue * (s : float) : float =
-  result = s
-
-proc newValue * (s : Nil) : Nil =
-  result = s
-  
-proc source*(s : SpreadSheet)=
-  return
-
-proc keep*(s : seq[int]) =
-  return 
-
-proc keep*(s : SpreadSheet)=
-  return
-
-proc columns*(s : seq[string]) =
-  return
-
-proc permits * (s : seq[string]) =
-  return
-
-proc USER * (s : string) =
-  return
-
 macro ROW * (statement : untyped) =
   return
 
-proc LENGTH * (s : SpreadSheet) : int =
-  ## DSL wrapper of len(spreadsheet) function
-  result = len(s)
+proc LENGTH * (sheet : SpreadSheet) : int =
+  ## DSL interface of len(spreadsheet) function
+  ## Returns the number of rows in `sheet`
+  result = len(sheet)
 
-proc SHOW * (s : SpreadSheet) =
+proc SHOW * (sheet : SpreadSheet) =
   ## DSL wrapper of show(spreadsheet) function
-  show(s)
+  ## `sheet` is the SpreadSheet-object, whichshould
+  ## be pretty-printed.
+  show(sheet)
 
-proc SHOW * (s : string) =
+proc SHOW * (id : string) =
   ## DSL wrapper of show(spreadsheet) function
-  show(odslServer[s])
+  ## Pretty prints the SpreadSheet which is at
+  ## position `id` on the SERVER-object
+  show(odslServer[id])
 
-proc WHERE * (spreadsheet : SpreadSheet, con1 : string, con2 : string, con3 : string) : seq[int] =
+proc WHERE * (spreadsheet : SpreadSheet, column : string, operator : string, condition : string) : seq[int] =
   ## DSL wrapper of where(spreadsheet) function
-  result = where(spreadsheet, con1, con2, con3)
+  ## Returns a seq of indices, which denote the rows
+  ## in `spreadsheet`, which meet that the value in
+  ## column `column` `operator` to `condition`
+  result = where(spreadsheet, column, operator, condition)
 
 macro ADDROW * (spreadsheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for addRow(spreadsheet, row)
@@ -133,7 +109,7 @@ macro ADDCOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   result = statement
 
 
-proc newSpreadsheetGen*(name : Name, rows : seq[Row], header: Row): SpreadSheet = 
+proc newSpreadsheetGen*(name : string, rows : seq[Row], header: Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## rows
@@ -189,24 +165,6 @@ macro FROM_PROC * (statement : untyped) : proc() : SpreadSheet =
   ## Macro for returning spreadsheet from logic
   result = newProc(params=[ident("SpreadSheet")], body = statement)
 
-
-macro setValue * (table : untyped, statement: untyped) =  
-  ## Macro for making Sending Mail more accessible
-  var target = table
-  var index : NimNode
-  var column : NimNode
-  var newValue : NimNode
-  for s in statement:
-    case s[0].strVal:
-      of "index":
-        index = s
-      of "column":
-        column = s
-      of "newValue":
-        newValue = s
-  result = newCall("setNewValue", target, index, column, newValue)
-
-
 # Macro for changing permissions
 macro setPermissions * (table : untyped, statement: untyped) =  
   var target = table
@@ -241,23 +199,6 @@ macro view * (statement : untyped) : SpreadSheet =
   else:
     result = newCall("createView", source, keep)
 
-macro ONACCEPT * (statement : untyped) =
-  return
-
-macro ACCEPTIF * (statement : untyped) =
-  return
-
-macro ONSEND * (statement : untyped) =
-  return
-
-macro ALLOWEDIT * (statement : untyped) =
-  return
-
-proc AS * (statement : string) =
-  return
-
-proc TO * (statement : string) =
-  return
 
 proc UPDATE * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
   ## DSL Interface for the host-API call update(toUpdate : var SpreadSheet, view : SpreadSheet, on = "index")
