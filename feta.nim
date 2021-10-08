@@ -67,30 +67,49 @@ proc WHERE * (spreadsheet : SpreadSheet, column : string, operator : string, con
 
 macro ADDROW * (spreadsheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for addRow(spreadsheet, row)
+  ## Adds all Row-objects, which are lying
+  ## in the indented logic block after ADDROW
+  ## to `spreadsheet`
   result = newStmtList()
   for s in statement:
     result.add(newCall("addRow", spreadsheet, s))
 
 macro REMOVEROW * (spreadsheet : var SpreadSheet, statement : untyped) =
-  ## DSL interface for removeRow(spreadsheet, integer)
+  ## DSL interface for removeow(spreadsheet, index)
+  ## Removes all Row-objects, which are represented
+  ## in the indented logic block, by integers, after REMOVEROW
+  ## from `spreadsheet`
   result = newStmtList()
   for s in statement:
     result.add(newCall("removeRow", spreadsheet, s))
 
 macro INSERT * (row : var Row, statement : untyped) =
-  ## DSL interface for add(row, value)
+  ## DSL interface for add(row, value)+
+  ## Interprets all values as Cells and appends
+  ## these Cells at the end of `row`
   result = newStmtList()
   for s in statement:
     result.add(newCall("add", row, s))
 
 macro REMOVECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for removeColumn(spreadSheet, column)
+  ## Interprets all values in `statement` as
+  ## strings and removes headers from
+  ## `sheet`, which match these names
   result = newStmtList()
   for s in statement:
     result.add(newCall("removeColumn", sheet, s))
 
 macro RENAMECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for renameColumn(spreadsheet, oldName, newName)
+  ## Sytnax:
+  ## sheet.RENAMECOLUMN:
+  ##  FROM:
+  ##    oldName
+  ##  TO:
+  ##    newName
+  ## Renames the column given by `oldName`
+  ## to `newName`
   var oldName : NimNode
   var newName : NimNode
 
@@ -106,24 +125,27 @@ macro RENAMECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
 
 macro ADDCOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for addColumn(spreadsheet, name, row)
-  result = statement
+  ## Interprets all entries in `statement` as `Row`-obects
+  ## and adds them as columns to `sheet`
+  result = newStmtList()
+  for s in statement:
+    result.add(newCall("addColumn", sheet, s))
 
-
-proc newSpreadsheetGen*(name : string, rows : seq[Row], header: Row): SpreadSheet = 
+proc newSpreadsheetGen(name : string, rows : seq[Row], header: Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## rows
   ## header
-  result = newSpreadsheet(name.name, rows, header)
+  result = newSpreadsheet(name, rows, header)
 
-proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet = 
+proc newSpreadsheetGen(rows : seq[Row]): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## rows
   ## header
   result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
 
-proc newSpreadsheetGen*(rows : Row): SpreadSheet = 
+proc newSpreadsheetGen(rows : Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## row
@@ -134,6 +156,16 @@ proc newSpreadsheetGen*(rows : Row): SpreadSheet =
 macro SENDMAIL * (statement: untyped) =  
   ## Macro for sending Mail
   ## Atomic Action: Send email
+  ## Syntax:
+  ## SENDMAIL:
+  ##  TO:
+  ##    toAddress
+  ##  TEXT:
+  ##    text
+  ##  SUBJECT:
+  ##    subjectText
+  ##  ATTACHEMENT:  # Attachement is optional!
+  ##    attachementFile
   var target : NimNode
   var text : NimNode
   var subject : NimNode
@@ -159,10 +191,20 @@ macro SENDMAIL * (statement: untyped) =
 macro CREATE_SPREADSHEET * (statement : untyped) : SpreadSheet =
   ## Macro for returning spreadsheets from logic
   ## Atomic Action: Create Spreadsheet
+  ## `statement` should be a statementList of Rows
+  ## Syntax:
+  ## var sheet = CREATE_SPREADSHEET.
+  ##  row1
+  ##  row2
+  ##  ...
   result = newCall("newSpreadsheetGen", statement)
 
 macro FROM_PROC * (statement : untyped) : proc() : SpreadSheet =
   ## Macro for returning spreadsheet from logic
+  ## Returns a function, which returns a SpreadSheet
+  ## `statement` can be:
+  ## * reference to a function
+  ## * function body, which returns a SpreadSheet
   result = newProc(params=[ident("SpreadSheet")], body = statement)
 
 # Macro for changing permissions
@@ -202,6 +244,7 @@ macro view * (statement : untyped) : SpreadSheet =
 
 proc UPDATE * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
   ## DSL Interface for the host-API call update(toUpdate : var SpreadSheet, view : SpreadSheet, on = "index")
+  ## Will be reworked in the future, to better match our syntax vision of no brackets
   toUpdate.update(view, on)
 
 macro LOAD * (statement : untyped) : SpreadSheet =
@@ -232,6 +275,12 @@ macro SAVE * (statement : untyped) : SpreadSheet =
   
 macro ADDVIEW * (statement : untyped) =
   ## Default Macro for adding views to a server execution
+  ## Syntax:
+  ## ADDVIEW:
+  ##  AS:
+  ##    id
+  ##  LOAD/FROM_PROC/SPREADSHEET:
+  ##    anyKindOfSpreadsheetGeneration
   var name = newStrLitNode("")
   var sheet : NimNode
   for s in statement:
@@ -247,6 +296,18 @@ macro ADDVIEW * (statement : untyped) =
 
 macro ADDFORM * (statement : untyped) =
   ## Default Macro for adding forms to a server execution
+  ## Syntax:
+  ## ADDFORM:
+  ##  AS:
+  ##    id
+  ##  LOAD/FROM_PROC/SPREADSHEET:
+  ##    anyKindOfSpreadsheetGeneration
+  ##  ALLOWEDIT:
+  ##    namesOfEditableColumns
+  ##  ACCCEPTIF:
+  ##    proc(COMMIT : SpreadSheet) : bool
+  ##  ONACCEPT:
+  ##    proc(COMMIT : SpreadSheet)
   var name = newStrLitNode("")
   var sheet = newProc(params=[ident("SpreadSheet")]) # Defaul proc which returns just an empty spreadsheet
   var errorMessage = newStrLitNode("An error has occured. Please contact the host for further information") # Default Error Message
@@ -277,6 +338,8 @@ macro ADDFORM * (statement : untyped) =
 macro ONSERVER * (statement : untyped) =
   ## Macro which indicates that all codeblocks inside
   ## should be executed on an online ODSL-server
+  ## After the `statement` code block is finished executing
+  ## the SERVER object is started locally
   result = statement
   result.add(newCall("serveServer"))
   discard statement
