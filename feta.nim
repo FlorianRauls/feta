@@ -207,16 +207,22 @@ macro FROM_PROC * (statement : untyped) : proc() : SpreadSheet =
   ## * function body, which returns a SpreadSheet
   result = newProc(params=[ident("SpreadSheet")], body = statement)
 
-# Macro for changing permissions
-macro setPermissions * (table : untyped, statement: untyped) =  
+macro SET_PERMISSIONS * (table : var SpreadSheet, statement: untyped) =  
+  ## Macro for changing edit permissions on a SpreadSheet object
+  ## Spreadsheet needs to be var
+  ## `statement` needs to contain statements in the form of:
+  ## USER:
+  ##  name : String
+  ## PERMIT:
+  ##  columns : seq[String]
   var target = table
   var permits : NimNode
   var user : NimNode
   for s in statement:
     case s[0].strVal:
-      of "user":
+      of "USER":
         user = s[1]
-      of "permits":
+      of "PERMIT":
         permits = s[1]
   newCall("setNewPermissions", target, user, permits)
 
@@ -291,6 +297,10 @@ macro ADDVIEW * (statement : untyped) =
         sheet = s
       of "CREATE_SPREADSHEET":
         sheet = s
+      of "SPREADSHEET":
+        sheet = newProc(params=[ident("SpreadSheet")], body=s)
+      of "FROM_PROC":
+        sheet = s
   result = newCall("addToServer", sheet, name, newStrLitNode("view"))
 
 
@@ -325,14 +335,18 @@ macro ADDFORM * (statement : untyped) =
       of "FROM_PROC":
         sheet = s
       of "ALLOWEDIT":
-        restricEdits = s
+        restricEdits = s[1]
       of "ACCEPTIF":
           confirmRequirement = newProc(params=[ident("bool"), newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1]) 
       of "ONACCEPT":
         applyChanges = newProc(params=[newEmptyNode(),newIdentDefs(ident("COMMIT"), ident("SpreadSheet"))], body=s[1])
-  result = newCall("addFormToServer", sheet, name, confirmRequirement, applyChanges, errorMessage) # adds form to server
-  if restricEdits.kind() == nnkEmpty: # Restric editing rights
-    result.add(newCall("setNewPermissions", sheet, name, restricEdits))
+  
+  if restricEdits.kind() != nnkEmpty: # Restricting editing rights
+    result = newStmtList()
+    result.add(newCall("setNewPermissions", sheet, newStrLitNode("UNIVERSAL"), restricEdits))
+    result = newCall("addFormToServer", sheet, name, confirmRequirement, applyChanges, restricEdits, errorMessage) # adds form to server
+  else:
+    result = newCall("addFormToServer", sheet, name, confirmRequirement, applyChanges, errorMessage) # adds form to server
    
 
 macro ONSERVER * (statement : untyped) =

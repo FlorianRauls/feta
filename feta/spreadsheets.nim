@@ -167,10 +167,10 @@ proc newSpreadSheet*(name: string, rows: seq[Row], header : Row): SpreadSheet =
     result = SpreadSheet(name: name, rows: copyRows[1..len(rows)-1], longestItems: candidates, hasHeader: hasHeader, header: rows[0], longestRow: lonRow)
     
   # set Universal permissions from the start
-  result.permissions["UNIVERSAL"] = {"placeholder": true}.toTable
+  result.permissions["UNIVERSAL"] = {"placeholder": false}.toTable
   result.permissions["UNIVERSAL"].del("placeholder")
   for entry in result.header.items:
-    result.permissions["UNIVERSAL"][entry.strVal] = true
+    result.permissions["UNIVERSAL"][entry.strVal] = false
 
 
 proc pad(input : string, padTo: int) : string =
@@ -405,6 +405,11 @@ proc `[]` * (SpreadSheet : SpreadSheet, r : int, c: string): Cell =
   var colInd = getColumnIndex(SpreadSheet, c)
   result = SpreadSheet.rows[r].items[colInd] 
 
+proc `[]` * (SpreadSheet : SpreadSheet, c: string, r : int): Cell =
+  ## Returns Cell at given position
+  var colInd = getColumnIndex(SpreadSheet, c)
+  result = SpreadSheet.rows[r].items[colInd] 
+
 proc `[]` * (SpreadSheet : SpreadSheet, name : string) : seq[string] =
   ## Returns a seq[string] of strVal of all values in Column named name of SpreadSheet
   var ind = getColumnIndex(SpreadSheet, name)
@@ -443,12 +448,10 @@ proc `:=` * (cell : var Cell, newEntry : string) =
   cell.strVal = newEntry
  # cell = newCell(newEntry)
 
-
 proc setNewValue * (SpreadSheet : var SpreadSheet,  r : int, c: string, newValue : string ) =
   ## Atomic Action : Update Value
   var colInd = getColumnIndex(SpreadSheet, c)
   SpreadSheet.rows[r].items[colInd] = newCell(newValue)
-
 
 proc toHash * (SpreadSheet : SpreadSheet, on : string) : Table[string, seq[Cell]] =
   ## Helper function which transforms SpreadSheet object to HashSpreadSheet
@@ -476,14 +479,15 @@ proc joinSpreadSheets * (SpreadSheet1 : var SpreadSheet, SpreadSheet2 : SpreadSh
   SpreadSheet1.removeColumn(on)
 
 # Atomic Actions: Set Permission for column in table
-proc setNewPermissions * (sheet : var SpreadSheet, role : string, âllow : seq[string]) =
+proc setNewPermissions * (sheet : var SpreadSheet, role : string, allow : seq[string]) =
   sheet.permissions[role] = {"placeholder": true}.toTable
   sheet.permissions[role].del("placeholder")
-  for name in âllow:
+  for name in allow:
     sheet.permissions[role][name] = true
   for s in sheet.header.getValues():
-    if s notin âllow:
+    if s notin allow:
       sheet.permissions[role][s] = false
+
 
 # Atomic Actions: Send Mail
 proc sendNewMail * (to : string, subject : string, content : string) =
@@ -523,7 +527,7 @@ proc generateTR(row : Row, permissions : seq[bool]) : string =
     
   result = result.replace(REPLACETOKENCELL, "")
 
-proc generateHTMLForm * (table : SpreadSheet, user : var = "UNIVERSAL") : string =
+proc generateHTMLForm * (table : SpreadSheet, permitted : seq[string] = @[]) : string =
   ## takes a SpreadSheet object as input, parses it
   ## and returns a HTML string with table from SpreadSheet 
   ## Form version holds a button which can POST data to a given server
@@ -582,9 +586,20 @@ proc generateHTMLForm * (table : SpreadSheet, user : var = "UNIVERSAL") : string
                 </body>
                 </html>
           """
+      
+  if(len(permitted) > 0):
+    var x = table
+    x.setNewPermissions("UNIVERSAL", permitted)
+    var permissions : seq[bool]
+    for item in x.header.items:
+      permissions.add(x.permissions["UNIVERSAL"][item.strVal])
+    for row in x.rows:
+      result = result.replace(REPLACETOKEN, generateTR(row, permissions))
+    result = result.replace(REPLACETOKEN, "")
+
   var permissions : seq[bool]
   for item in table.header.items:
-    permissions.add(table.permissions[user][item.strVal])
+    permissions.add(table.permissions["UNIVERSAL"][item.strVal])
   for row in table.rows:
     result = result.replace(REPLACETOKEN, generateTR(row, permissions))
   result = result.replace(REPLACETOKEN, "")

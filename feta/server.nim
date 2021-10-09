@@ -10,6 +10,7 @@ type
     route : Table[string, SpreadSheet] ## Routes from an id to a SpreadSheet
     procRoute : Table[string, proc (): SpreadSheet] ## Routes from an id to a function which returns a SpreadSheet
     methods : Table[string, string] ## Routes from an id to the kind of SpreadSheet
+    allowance : Table[string, seq[string]] ## Routes from an id to a sequence of booleans
     confirmRoute : Table[string, proc(s : SpreadSheet) : bool] ## Routes from an id to the confirmation function
     applyRoute : Table[string, proc(s : SpreadSheet)] ## Routes from an it to the proc which should be applied after confirmation
     errorMessage : Table[string, string] ## Routes from id to error message which should be thrown for user
@@ -60,7 +61,8 @@ router myrouter:
             of "form":
               resp odslServer.route[request.params["id"]].generateHTMLForm()
             of "function":
-              resp odslServer.procRoute[request.params["id"]]().generateHTMLForm()
+              var x = odslServer.allowance[request.params["id"]]
+              resp odslServer.procRoute[request.params["id"]]().generateHTMLForm(x)
             else:
               resp "Unknown method!"
         else:
@@ -100,10 +102,11 @@ proc setPort * (port : int) =
   ## Takes a port number as input and initiates the HTTP-Server
   odslServer.settings = newSettings(port=port.Port)
 
-proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
+proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), permits : seq[string], error = "something went wrong") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
   odslServer.procRoute[id] = p
+  odslServer.allowance[id] = permits
   odslServer.methods[id] = "function"
   odslServer.confirmRoute[id] = confirm
   odslServer.applyRoute[id] = apply

@@ -1,5 +1,6 @@
 import unittest
 import ../feta
+import tables
 
 test "create string cell":
     var testCell = newCell("test")
@@ -205,3 +206,127 @@ test "remove row from spreadsheet":
     testSpreadsheet.removeRow(0)
 
     check len(testSpreadsheet) == 0
+
+test "rename column from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.renameColumn("First", "AlsoFirst")
+
+    check testSpreadsheet.header.items[0].strVal == "AlsoFirst"
+
+test "get Cell from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet[0, 0].strVal == "1"
+
+test "get Cell from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet["First", 0].strVal == "1"
+
+test "get Cell from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet[0, "First"].strVal == "1"
+
+test "get Column from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet["First"][0] == "1"
+
+test "get length of spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check len(testSpreadsheet) == 1
+
+test "get column length of spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check colLen(testSpreadsheet) == 3
+
+test "set new value":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.setNewValue(0, "First", "11")
+
+    check testSpreadsheet[0, "First"].strVal == "11"
+
+test "join two tables":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    
+    var name2 = "TestName2"
+    var header2 = "Index" | "Second2" | "Third2"
+    var rows2 = @[1 | "Two" | "Three"]
+
+    var testSpreadsheet2 = newSpreadSheet(name2, rows2, header2)
+
+    testSpreadsheet.joinSpreadsheets(testSpreadsheet2, "Index")
+
+    check testSpreadsheet[0, "Second2"].strVal == "Two"
+    check testSpreadsheet[0, "Third2"].strVal == "Three"
+    check testSpreadsheet[0, "Second"].strVal == "2"
+    check testSpreadsheet[0, "Third"].strVal == "3"
+    check testSpreadsheet[0, "Index"].strVal == "1"
+
+
+test "set permissions on table":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.setNewPermissions("testRole", @["Index", "Third"])
+    
+    check testSpreadsheet.permissions["testRole"]["Index"]  == testSpreadsheet.permissions["testRole"]["Third"] == true
+    check testSpreadsheet.permissions["testRole"]["Second"] == false
+
+test "set permissions on table DSL":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.SET_PERMISSIONS:
+        USER:
+            "testRole"
+        PERMIT:
+            @["Index", "Third"]
+    check testSpreadsheet.permissions["testRole"]["Index"]  == testSpreadsheet.permissions["testRole"]["Third"] == true
+    check testSpreadsheet.permissions["testRole"]["Second"] == false
