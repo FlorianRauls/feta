@@ -411,10 +411,10 @@ proc `[]` * (SpreadSheet : SpreadSheet, name : string) : seq[string] =
   for row in SpreadSheet.rows:
     result.add(row.items[ind].strVal)
 
-proc addColumn * (SpreadSheet : var SpreadSheet, name = "NaN", toAdd : Row) =
+proc addColumn * (SpreadSheet : var SpreadSheet, toAdd : Row) =
   ## Atomic Action: Add Column
-  SpreadSheet.header.items.add(newCell(name))
-  for i, item in pairs(toAdd.items):
+  SpreadSheet.header.items.add(toAdd.items[0])
+  for i, item in pairs(toAdd.items[1..len(toAdd.items)-1]):
     case item.kind:
         of nkInt: SpreadSheet.rows[i] = SpreadSheet.rows[i].add(item.intVal)
         of nkFloat: SpreadSheet.rows[i] = SpreadSheet.rows[i].add(item.floatVal)

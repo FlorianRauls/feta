@@ -22,6 +22,7 @@ test "create empty cell":
     var x : Nil
     var testCell = newCell(x)
     check testCell.kind == CellKind.nkEmpty
+    check testCell.strVal == "-"
 
 test "create new Row":
     var x : seq[Cell]
@@ -156,3 +157,51 @@ test "create new spreadsheet":
     check testSpreadsheet.header == header
     check testSpreadsheet.rows == rows
 
+test "add column to spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.addColumn("Fourth" | 4)
+
+    check testSpreadsheet.header.items[3].strVal == "Fourth"
+    check testSpreadsheet.rows[0].items[3].strVal == "4"
+
+test "remove column from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.removeColumn("Second")
+
+    check testSpreadsheet.header.items[1].strVal == "Third"
+    check testSpreadsheet.rows[0].items[1].strVal == "3"
+
+
+test "add row to spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.addRow(4 | 5 | 6)
+
+    check testSpreadsheet.rows[1].items[0].strVal == "4"
+    check testSpreadsheet.rows[1].items[1].strVal == "5"
+    check testSpreadsheet.rows[1].items[2].strVal == "6"
+
+test "remove row from spreadsheet":
+    var name = "TestName"
+    var header = "First" | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    testSpreadsheet.removeRow(0)
+
+    check len(testSpreadsheet) == 0
