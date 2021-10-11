@@ -304,10 +304,6 @@ proc `and` * (x : seq[Row], y : Row) : seq[Row] =
 proc `and` * (x : Row, y : Row) : seq[Row] =
   result = @[x, y]
 
-proc create * (SpreadSheet : SpreadSheet) : SpreadSheet =
-  ## Only needed for syntax reasons
-  result = SpreadSheet
-
 proc toJSONBody * (SpreadSheet : SpreadSheet) : JsonNode =
     ## take a SpreadSheet Object and create a JSON response from it
     ## This implementation is very specific to the google-sheets api
@@ -343,7 +339,48 @@ proc toJSONBody * (SpreadSheet : SpreadSheet) : JsonNode =
     rangeString.add(col)
     rangeString.add(ro)
     result = %* {"range": rangeString,"majorDimension":"ROWS", "values" : %* output }
+
+proc toJSON * (SpreadSheet : SpreadSheet) : JsonNode =
+    ## take a SpreadSheet Object and create a JSON response from it
+    ## This implementation is very specific to the google-sheets api
+    var output : seq[seq[string]]
+    # count no of rows
+    var rowDepth = 0
+    # count no of max items in a single row
+    var maxColDepth = 0
     
+    var hRow : seq[string]
+    for h in SpreadSheet.header.items:
+      hRow.add(h.strVal)
+    output.add(hRow)
+    # go through all rows
+    for row in SpreadSheet.rows:
+        # temporary storage for row
+        var outRow : seq[string]
+        # increment rows
+        rowDepth = rowDepth + 1 
+        # temporary item counter
+        var colDepth = 0
+        for item in row.items:
+            case item.kind:
+                of nkInt: outRow.add($item.intVal)
+                of nkFloat: outRow.add($item.floatVal)
+                of nkString: outRow.add(item.strVal) 
+                of nkEmpty: outRow.add("-") 
+            colDepth = colDepth + 1 
+        # if temporary counter is the new max it is the new standard
+        if colDepth > maxColDepth:
+          maxColDepth = colDepth
+        
+        output.add(outRow)
+    # write result json which will be posted
+    var col = toUpperAscii(char(maxColDepth+96))
+    var ro = $rowDepth
+    var rangeString ="testSheet!A1:"
+    rangeString.add(col)
+    rangeString.add(ro)
+    result = %* {"name":SpreadSheet.name, "values" : %* output }
+  
 proc show*(SpreadSheet:SpreadSheet) =
   ## interface to use debugSpreadSheet
   debugSpreadSheet(SpreadSheet)

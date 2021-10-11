@@ -1,6 +1,7 @@
 import unittest
 import ../feta
 import tables
+import json 
 
 test "create string cell":
     var testCell = newCell("test")
@@ -328,5 +329,23 @@ test "set permissions on table DSL":
             "testRole"
         PERMIT:
             @["Index", "Third"]
+            
     check testSpreadsheet.permissions["testRole"]["Index"]  == testSpreadsheet.permissions["testRole"]["Third"] == true
     check testSpreadsheet.permissions["testRole"]["Second"] == false
+
+test "convert to JSON":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testJson = testSpreadsheet.toJSON()
+    
+    check $testJson["name"] == "\"TestName\""
+    check $testJson["values"][0][0] == "\"Index\""
+    check $testJson["values"][0][1] == "\"Second\""
+    check $testJson["values"][0][2] == "\"Third\""
+    check $testJson["values"][1][0] == "\"1\""
+    check $testJson["values"][1][1] == "\"2\""
+    check $testJson["values"][1][2] == "\"3\""
