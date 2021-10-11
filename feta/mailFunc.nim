@@ -1,5 +1,6 @@
 from files/userData import userMail, userMailWord , targetMailTest, targetMailNameTest, smtpServer, smtpServerPort
 import asyncdispatch, logging, smtp, strformat, strutils, mime
+import parsecfg
 
 type Mailer* = object
   ## Mailer which holds necessary information for sending emails
@@ -85,4 +86,6 @@ var mailBot* : Mailer
 try:  
   mailBot = newMailer(smtpServer, smtpServerPort, userMail, targetMailNameTest, userMail, userMailWord)
 except ValueError:
-  echo "Initalization of mail functionalities failed. Did you insert your data into ./files/userData.nim?"
+  var con : Config = loadConfig("./feta.nimble")
+  var ver = con.getSectionValue("", "version")
+  echo "Initalization of mail functionalities failed. Did you insert your data into ~/.nimble/pkgs/feta-"&ver&"/feta/files/userData.nim?"

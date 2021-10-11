@@ -4,19 +4,17 @@ import googleapi/drive
 import asyncdispatch, json
 import strutils
 import json
-from files/userData import userMail
+from files/userData import serviceAccountFileName
 
 # location of odsl-service worker json for google authorization
-var name = "./feta/files/odsl-316010-80a90228e51a.json"
+var name = "./feta/files/" & serviceAccountFileName
 
-echo ""
-echo "Initalizing your Google Account..."
-echo "This may take a short while..."
-echo ""
 # initalized Google Sheets API worker
-var conn = waitFor newConnection(name)
-echo "Google Worker Initalized!"
-echo ""
+var conn : connection.Connection
+try:
+    conn = waitFor newConnection(name)
+except IOError:
+    echo("\e[1;33m It seems like you have not create a viable Google service account. Please visit https://github.com/FlorianRauls/feta/wiki/Quick-Start-Guide for further information")
 
 # API URLs
 const sheetApiURL = "https://sheets.googleapis.com/v4/spreadsheets"
