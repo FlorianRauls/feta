@@ -1,14 +1,7 @@
-import src/odsl
+import feta
 
-var overView = fromGoogleSheets("1bVAbIYJx7ZGpi5IvhW9h1OfNhyP6jnHFnCxSPLuVG7c")
-
-
-var relevant = view:
-    source:
-        overView
-    keep:
-        overView.where("E-Mail", "==", "-")
-    columns:
-        overView.header.getValues()
-
-relevant.show()
+var x = CREATE_SPREADSHEET:
+    "Hi" | "other row"
+x.ADDROW:
+    "Marco" | "Polo"
+    "Hannah" | "Montana"
