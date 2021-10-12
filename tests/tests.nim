@@ -2,6 +2,7 @@ import unittest
 import ../feta
 import tables
 import json 
+import strutils
 
 test "create string cell":
     var testCell = newCell("test")
@@ -349,3 +350,108 @@ test "convert to JSON":
     check $testJson["values"][1][0] == "\"1\""
     check $testJson["values"][1][1] == "\"2\""
     check $testJson["values"][1][2] == "\"3\""
+
+test "convert to htmlform":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testHTML = testSpreadsheet.generateHTMLForm()
+    check testHTML.strip() == """<html>
+                <head>
+                  <style>
+                    table, th, td {
+                      border: 1px solid black;
+                      border-collapse: collapse;
+                    }
+                    th, td {
+                      padding: 15px;
+                      text-align: left;
+                    }
+                  </style>
+
+                  <script src=
+                    "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+                  </script>
+                  <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js" integrity="sha256-H8xrCe0tZFi/C2CgxkmiGksqVaxhW0PFcUKZJZo1yNU=" crossorigin="anonymous"></script>
+
+                </head> 
+
+                <body>
+                  <table style="width:100%" id="table">
+                          <tr id="row">
+        <th bgcolor='#FF8484'> Index</th><th bgcolor='#FF8484'> Second</th><th bgcolor='#FF8484'> Third</th>      </tr>
+            <tr id="row">
+        <th bgcolor='#FF8484'> 1</th><th bgcolor='#FF8484'> 2</th><th bgcolor='#FF8484'> 3</th>      </tr>
+                        </table>
+                  <button id="save">Save Changes</button>
+
+                  <script type="text/javascript">
+
+                $('#save').on('click', function(){
+
+                  var table = JSON.stringify($('#table').tableToJSON())
+                  let ws = new WebSocket("ws://localhost:5000/ws");
+                  ws.onmessage = function(evnt) {
+                    console.log(evnt.data);
+                  }
+                  var url_string = window.location.href
+                  var url = new URL(url_string);
+                  var c = url.searchParams.get("id");
+                  var message = c.concat(" ", table)
+                  console.log(message);
+                  ws.onopen = function(evnt) {
+                    ws.send(message);
+                    ws.onmessage = function(msg){
+                      console.log(msg.data);
+                        if(msg.data != "success")
+                          alert(msg.data);
+                          window.location.reload(true); 
+                      }
+                  return true;
+                }
+                  });
+                  </script>
+                </body>
+                </html>"""
+
+test "convert to htmlview":
+    
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testHTML = testSpreadsheet.generateHTMLView()
+    check testHTML.strip() == """<html>
+                <head>
+                  <style>
+                    table, th, td {
+                      border: 1px solid black;
+                      border-collapse: collapse;
+                    }
+                    th, td {
+                      padding: 15px;
+                      text-align: left;
+                    }
+                  </style>
+
+                  <script src=
+                    "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+                  </script>
+                </head> 
+
+                <body>
+                  <table style="width:100%">
+                          <tr id="row">
+        <th bgcolor='#FF8484'> Index</th><th bgcolor='#FF8484'> Second</th><th bgcolor='#FF8484'> Third</th>      </tr>
+            <tr id="row">
+        <th bgcolor='#FF8484'> 1</th><th bgcolor='#FF8484'> 2</th><th bgcolor='#FF8484'> 3</th>      </tr>
+                        </table>
+                </body>
+                </html>"""
+
+test

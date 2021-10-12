@@ -131,21 +131,21 @@ macro ADDCOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   for s in statement:
     result.add(newCall("addColumn", sheet, s))
 
-proc newSpreadsheetGen(name : string, rows : seq[Row], header: Row): SpreadSheet = 
+proc newSpreadsheetGen*(name : string, rows : seq[Row], header: Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## rows
   ## header
   result = newSpreadsheet(name, rows, header)
 
-proc newSpreadsheetGen(rows : seq[Row]): SpreadSheet = 
+proc newSpreadsheetGen*(rows : seq[Row]): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## rows
   ## header
   result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
 
-proc newSpreadsheetGen(rows : Row): SpreadSheet = 
+proc newSpreadsheetGen*(rows : Row): SpreadSheet = 
   ## Generate new Spreadsheet with given
   ## name
   ## row
