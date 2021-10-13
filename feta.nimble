@@ -7,7 +7,7 @@ installDirs = @["feta"]
 
 # Deps
 
-requires "nim >= 1.2.8"
+requires "nim >= 1.2.12"
 requires "mime >= 0.0.3"
 requires "jester >= 0.5.0"
 requires "googleapi"

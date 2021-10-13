@@ -586,3 +586,12 @@ test "DSL : length":
     var testSpreadsheet = newSpreadSheet(name, rows, header)
 
     check testSpreadsheet.LENGTH() == 2
+
+test "DSL : conditional":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet.LENGTH() == 2
