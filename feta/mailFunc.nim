@@ -86,6 +86,4 @@ var mailBot* : Mailer
 try:  
   mailBot = newMailer(smtpServer, smtpServerPort, userMail, targetMailNameTest, userMail, userMailWord)
 except ValueError:
-  var con : Config = loadConfig("./feta.nimble")
-  var ver = con.getSectionValue("", "version")
-  echo "Initalization of mail functionalities failed. Did you insert your data into ~/.nimble/pkgs/feta-"&ver&"/feta/files/userData.nim?"
+  echo "Initalization of mail functionalities failed. Did you insert your data into ~/.nimble/pkgs/feta-INSTALLEDVERSION/feta/files/userData.nim?"
