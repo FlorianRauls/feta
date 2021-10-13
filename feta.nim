@@ -89,7 +89,7 @@ macro INSERT * (row : var Row, statement : untyped) =
   ## these Cells at the end of `row`
   result = newStmtList()
   for s in statement:
-    result.add(newCall("add", row, s))
+    result.add(newCall("addVarRow", row, s))
 
 macro REMOVECOLUMN * (sheet : var SpreadSheet, statement : untyped) =
   ## DSL interface for removeColumn(spreadSheet, column)

@@ -102,6 +102,22 @@ proc add*(this : Row, x : Nil) : Row =
   result = this
   result.items.add(newCell(x))
 
+proc addVarRow*(this : var Row, x : int)  =
+  ## Adds the given integer as integer Cell to the Row
+  this.items.add(newCell(x))
+
+proc addVarRow*(this : var Row, x : float)  =
+  ## Adds the given float as float Cell to the Row
+  this.items.add(newCell(x))
+
+proc addVarRow*(this : var Row, x : string)  =
+  ## Adds the given string as string Cell to the Row
+  this.items.add(newCell(x))
+
+proc addVarRow*(this : var Row, x : Nil)  =
+  ## Adds the given NaN as NaN Cell to the Row
+  this.items.add(newCell(x))
+
 proc padRow(row : var Row, diff : int)=
   ## Fills row with NaN-cells until it has lenght of diff
   for i in 0..diff-1:
@@ -453,9 +469,24 @@ proc `[]` * (SpreadSheet : SpreadSheet, name : string) : seq[string] =
   for row in SpreadSheet.rows:
     result.add(row.items[ind].strVal)
 
+
+
+proc addRow * (SpreadSheet: var SpreadSheet, row : Row) =
+  ## Atomic Action: Add Row
+  SpreadSheet.rows.add(row)
+  SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
+
 proc addColumn * (SpreadSheet : var SpreadSheet, toAdd : Row) =
   ## Atomic Action: Add Column
-  SpreadSheet.header.items.add(toAdd.items[0])
+  
+  if len(SpreadSheet.rows) < len(toAdd.items)-1:
+    for j in [0..len(SpreadSheet.rows) - len(toAdd.items)-1]:
+      var x : Row
+      SpreadSheet.addRow(x)
+    SpreadSheet.header.items.add(toAdd.items[0])
+  else:
+    SpreadSheet.header.items.add(toAdd.items[0])
+
   for i, item in pairs(toAdd.items[1..len(toAdd.items)-1]):
     case item.kind:
         of nkInt: SpreadSheet.rows[i] = SpreadSheet.rows[i].add(item.intVal)
@@ -472,10 +503,6 @@ proc colLen * (SpreadSheet : SpreadSheet) : int =
   ## Returns number of columns of SpreadSheet
   result = len(SpreadSheet.header.items)
 
-# Atomic Action: Add Row
-proc addRow * (SpreadSheet: var SpreadSheet, row : Row) =
-  SpreadSheet.rows.add(row)
-  SpreadSheet = newSpreadSheet(SpreadSheet.name, SpreadSheet.rows, SpreadSheet.header)
 
 proc `+=` * (SpreadSheet: var SpreadSheet, row : Row) =
   SpreadSheet.addRow(row)

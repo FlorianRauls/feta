@@ -595,3 +595,128 @@ test "DSL : conditional":
     var testSpreadsheet = newSpreadSheet(name, rows, header)
 
     check testSpreadsheet.LENGTH() == 2
+
+test "DSL : ADDROW":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.ADDROW:
+        1 | 2 | 3
+        3 | 2 | 1
+
+    check testSpreadsheet.rows[0].items[0].strVal == "1"
+    check testSpreadsheet.rows[0].items[1].strVal == "2"
+    check testSpreadsheet.rows[0].items[2].strVal == "3"
+    check testSpreadsheet.rows[1].items[0].strVal == "1"
+    check testSpreadsheet.rows[1].items[1].strVal == "2"
+    check testSpreadsheet.rows[1].items[2].strVal == "3"
+    check testSpreadsheet.rows[2].items[0].strVal == "3"
+    check testSpreadsheet.rows[2].items[1].strVal == "2"
+    check testSpreadsheet.rows[2].items[2].strVal == "1"
+
+test "DSL : REMOVEROW":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.ADDROW:
+        1 | 2 | 3
+        3 | 2 | 1
+
+    check testSpreadsheet.rows[0].items[0].strVal == "1"
+    check testSpreadsheet.rows[0].items[1].strVal == "2"
+    check testSpreadsheet.rows[0].items[2].strVal == "3"
+    check testSpreadsheet.rows[1].items[0].strVal == "1"
+    check testSpreadsheet.rows[1].items[1].strVal == "2"
+    check testSpreadsheet.rows[1].items[2].strVal == "3"
+    check testSpreadsheet.rows[2].items[0].strVal == "3"
+    check testSpreadsheet.rows[2].items[1].strVal == "2"
+    check testSpreadsheet.rows[2].items[2].strVal == "1"
+
+    testSpreadsheet.REMOVEROW:
+        2
+        1
+    check testSpreadsheet.LENGTH() == 1
+
+test "DSL : INSERT":
+    var testRow = 1 | 2 | 3
+    testRow.INSERT:
+        4
+        5
+    check testRow.items[0].strVal == "1"
+    check testRow.items[1].strVal == "2"
+    check testRow.items[2].strVal == "3"
+    check testRow.items[3].strVal == "4"
+    check testRow.items[4].strVal == "5"
+
+
+test "DSL : REMOVECOLUMN":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.REMOVECOLUMN:
+        "Index"
+        "Third"
+
+    check testSpreadsheet.header.items.len() == 1
+    check testSpreadsheet.header.items[0].strVal == "Second"
+
+test "DSL : RENAMECOLUMN":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.RENAMECOLUMN:
+        FROM:
+            "Index"
+        TO:
+            "BetterIndex"
+
+    check testSpreadsheet.header.items[0].strVal == "BetterIndex"
+
+
+test "DSL : ADDCOLUMN":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+    testSpreadsheet.ADDCOLUMN:
+        "Fourth" | "This" | 4
+        "Fith" | null | 5
+
+    check testSpreadsheet.header.items.len() == 5
+    check testSpreadsheet.header.items[3].strVal == "Fourth"
+    check testSpreadsheet.header.items[4].strVal == "Fith"
+    check testSpreadsheet.rows[0].items[0].strVal == "1"
+    check testSpreadsheet.rows[0].items[1].strVal == "2"
+    check testSpreadsheet.rows[0].items[2].strVal == "3"
+    check testSpreadsheet.rows[0].items[3].strVal == "This"
+    check testSpreadsheet.rows[0].items[4].strVal == "-"
+
+test "DSL : CREATE_SPREADSHEET":
+
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+        1 | 2 | 3 | "This" | null
+
+    check testSpreadsheet.header.items.len() == 5
+    check testSpreadsheet.header.items[3].strVal == "Fourth"
+    check testSpreadsheet.header.items[4].strVal == "Fith"
+    check testSpreadsheet.rows[0].items[0].strVal == "1"
+    check testSpreadsheet.rows[0].items[1].strVal == "2"
+    check testSpreadsheet.rows[0].items[2].strVal == "3"
+    check testSpreadsheet.rows[0].items[3].strVal == "This"
+    check testSpreadsheet.rows[0].items[4].strVal == "-"
+    check testSpreadsheet.rows[1].items[0].strVal == "1"
+    check testSpreadsheet.rows[1].items[1].strVal == "2"
+    check testSpreadsheet.rows[1].items[2].strVal == "3"
+    check testSpreadsheet.rows[1].items[3].strVal == "This"
+    check testSpreadsheet.rows[1].items[4].strVal == "-"
