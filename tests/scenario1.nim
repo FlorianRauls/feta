@@ -1,7 +1,5 @@
 import feta
-import tables
 
-###################### DSL DEMO ####################################
 ONSERVER:
     ADDVIEW:
         LOAD:

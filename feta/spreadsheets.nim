@@ -10,6 +10,7 @@ import htmlparser
 import xmltree
 import parsecsv
 
+
 from mailFunc import mailBot
 from asyncdispatch import waitFor
 
@@ -401,7 +402,7 @@ proc show*(SpreadSheet:SpreadSheet) =
   ## interface to use debugSpreadSheet
   debugSpreadSheet(SpreadSheet)
 
-proc getColumnIndex(SpreadSheet : SpreadSheet, colName : string) : int =
+proc getColumnIndex*(SpreadSheet : SpreadSheet, colName : string) : int =
     ## helper function which returns the column index of a header by name
     var names : seq[string]
     for i in SpreadSheet.header.items:

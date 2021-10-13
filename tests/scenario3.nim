@@ -1,15 +1,29 @@
-import src/odsl
-import src/dsl
+import feta
 
-#[
-Web upload form 
-    possibly depending on lectures in the semester / university etc. 
-
-    might have an expiration date 
-
-    Students enter their data (name, imma-nr) and file 
-
-    Upload to a file server and entry into a spreadsheet/DB 
-
-    Possibly an email is triggered 
-]#
+var spreadsheet = LOAD:
+    Webcrawl:
+        "www.addresofwebsite.com"
+        
+spreadsheet.SAVE:
+    GoogleSheets:
+        "idforgooglesheets"
+        
+ONSERVER:
+    for ROW in spreadsheet.rows:
+        ADDFORM:
+            FROM_PROC:
+                var x = LOAD:
+                    GoogleSheets:
+                        "idforgooglesheets"
+                x = x.WHERE("supervisor", "==", ROW["supervisor"])
+                return x
+            AS:
+                ROW["supervisor"]
+            ONACCEPT:
+                var main = LOAD:
+                    GoogleSheets:
+                        "idforgooglesheets"
+                main.UPDATE(COMMIT, "Title")
+                main.SAVE:
+                    GoogleSheets:
+                        "idforgooglesheets"

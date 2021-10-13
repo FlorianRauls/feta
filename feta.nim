@@ -23,11 +23,8 @@ macro ALLOWEDIT * (statement : untyped) =
 proc AS * (statement : string) =
   return
 
-proc TO * (statement : string) =
-  return
-
-proc TO * (s : string) : string =
-  result = s
+proc TO * (statement : string) : string =
+  return statement
 
 proc ATTACHEMENT * (s : string) : string =
   result = s
@@ -375,5 +372,15 @@ macro ONSERVER * (statement : untyped) =
   result.add(newCall("serveServer"))
   discard statement
 
+
+proc COLUMNINDEX * (sheet : SpreadSheet, column : string) : int =
+  ## Takes `sheet : SpreadSheet` and `column : string`
+  ## as inputs and returns the integer index of
+  ## the respective column in the header
+  ## of `sheet`
+  result = sheet.getColumnIndex(column)
+
+proc `[]`*(row : Row, index : int) : string =
+  result = row.items[index].strVal
 
 export spreadsheets, server, googleapi, metaapi
