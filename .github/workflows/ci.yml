@@ -21,9 +21,11 @@ jobs:
         version:
           - stable
           - 1.4.0
+          - 1.2.0
         os:
           - ubuntu-latest
           - windows-latest
+          - macOS-latest
     steps:
     - uses: actions/checkout@v1
     - uses: iffy/install-nim@v3.2.2
