@@ -26,8 +26,8 @@ type CellKind* = enum  ## the different node types
   nkString,        ## a cell with a string value
   nkEmpty         ## an empty cell
 
-#[ Implementation of the generic Cell class
-which will be the center and target of most language features]#
+## Implementation of the generic Cell class
+## which will be the center and target of most language features
 type 
   Cell * = ref object
     kind* : CellKind
@@ -49,8 +49,8 @@ proc newCell*(value: Nil): Cell =
   result = Cell(kind: nkEmpty, strVal: "-")
 
 
-#[ Implementation of the generic Row class
-which will be the center and target of most language features]#
+## Implementation of the generic Row class
+## which will be the center and target of most language features
 type 
   Row * = object ## Generic Row Class
     items* : seq[Cell] ## Holds a sequence of Cells
@@ -70,8 +70,9 @@ proc getValues * (row : Row) : seq[string] =
   for v in row.items:
     result.add(v.strVal)
 
-#[ Implementation of the generic SpreadSheet class
-which will be the center and target of most language features]#
+
+## Implementation of the generic SpreadSheet class
+## which will be the center and target of most language features]
 type
   SpreadSheet * = object ## SpreadSheet Object
     name* : string ## Name of SpreadSheet
@@ -134,7 +135,6 @@ proc newSpreadSheet*(name: string, rows: seq[Row], header : Row): SpreadSheet =
     if len(header.items) > lonRow:
       lonRow = len(header.items)
 
-  #################this section happens to ensure readable debug screens####################
   var candidates : seq[int]
   for row in rows:
     # search for longest row to ensure integrity
@@ -507,8 +507,9 @@ proc colLen * (SpreadSheet : SpreadSheet) : int =
 proc `+=` * (SpreadSheet: var SpreadSheet, row : Row) =
   SpreadSheet.addRow(row)
 
-# Atomic Action : Update Value Operator
+
 proc `:=` * (cell : var Cell, newEntry : string) = 
+  ## Atomic Action : Update Value Operator
   cell.strVal = newEntry
  # cell = newCell(newEntry)
 
@@ -552,13 +553,13 @@ proc setNewPermissions * (sheet : var SpreadSheet, role : string, allow : seq[st
     if s notin allow:
       sheet.permissions[role][s] = false
 
-
-# Atomic Actions: Send Mail
 proc sendNewMail * (to : string, subject : string, content : string) =
+  ## Atomic Actions: Send Mail
   waitFor( mailFunc.sendNewMail(mailBot, to, "John Doe", subject, content) )
 
-# Atomic Actions: Send Mail with File
+
 proc sendNewFile * (to : string, subject : string, content : string, file : string) =
+  ## Atomic Actions: Send Mail with File
   waitFor( mailFunc.sendNewFile(mailBot, to, "John Doe", subject, content, file) )
 
 # Atomic Actions: Append Spreadsheet

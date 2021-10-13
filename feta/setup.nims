@@ -1,5 +1,5 @@
 proc installEmail() =
-    var userDataLocation = "feta/files/userData.nim" # location of userData.nim
+    var userDataLocation = "files/userData.nim" # location of userData.nim
     if fileExists(userDataLocation):
         echo("\e[1;31m Warning: Your following answers will be saved as plain text!")
         var file = readFile(userDataLocation) # read file
@@ -41,4 +41,5 @@ proc installEmail() =
         echo file
     else:
         echo userDataLocation & " does not exist. Continuing installation."
+
 installEmail()
