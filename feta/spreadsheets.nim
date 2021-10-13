@@ -765,7 +765,6 @@ proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
           var currOrigIndex = toUpdate.getColumnIndex(col.strVal)
           toUpdate.rows[k].items[currOrigIndex] = view.rows[i].items[currIndex]
 
-
 proc createView * (table : SpreadSheet, indRange : seq[int], colRange : seq[string], newName="") : SpreadSheet =
   ## Takes Spreadsheet, indexRange and Range of names as input
   ## And returns a view of the given SpreadSheet

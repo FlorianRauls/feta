@@ -454,7 +454,7 @@ test "convert to htmlview":
                 </body>
                 </html>"""
 
-test "convert to JSON":
+test "JSON2":
     var name = "TestName"
     var header = "Index"  | "Second" | "Third"
     var rows = @[1 | 2 | 3]
@@ -470,3 +470,119 @@ test "convert to JSON":
     check $testJson["values"][1][0] == "\"1\""
     check $testJson["values"][1][1] == "\"2\""
     check $testJson["values"][1][2] == "\"3\""
+
+
+test "read from html":
+    
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = fromHTML( """<html>
+                <head>
+                  <style>
+                    table, th, td {
+                      border: 1px solid black;
+                      border-collapse: collapse;
+                    }
+                    th, td {
+                      padding: 15px;
+                      text-align: left;
+                    }
+                  </style>
+
+                  <script src=
+                    "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+                  </script>
+                </head> 
+
+                <body>
+                  <table style="width:100%">
+                          <tr id="row">
+        <th bgcolor='#FF8484'> Index</th><th bgcolor='#FF8484'> Second</th><th bgcolor='#FF8484'> Third</th>      </tr>
+            <tr id="row">
+        <th bgcolor='#FF8484'> 1</th><th bgcolor='#FF8484'> 2</th><th bgcolor='#FF8484'> 3</th>      </tr>
+                        </table>
+                </body>
+                </html>""")
+
+    check testSpreadsheet.header.items[0].strVal == "Index"
+    check testSpreadsheet.header.items[1].strVal == "Second"
+    check testSpreadsheet.header.items[2].strVal == "Third"
+    check testSpreadsheet.rows[0].items[0].strVal == "1"
+    check testSpreadsheet.rows[0].items[1].strVal == "2"
+    check testSpreadsheet.rows[0].items[2].strVal == "3"
+
+
+test "create view of spreadsheet":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testView = createView(testSpreadsheet, @[0], @["Index", "Second"])
+
+    check testView.header.items[0].strVal == "Index"
+    check testView.header.items[1].strVal == "Second"
+    check testView.rows[0].items[0].strVal == "1"
+    check testView.rows[0].items[1].strVal == "2"
+
+test "create view of spreadsheet : pure index":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testView = createView(testSpreadsheet, @[0])
+
+    check testView.header.items[0].strVal == "Index"
+    check testView.header.items[1].strVal == "Second"
+    check testView.header.items[2].strVal == "Third"
+    check testView.rows[0].items[0].strVal == "1"
+    check testView.rows[0].items[1].strVal == "2"
+    check testView.rows[0].items[2].strVal == "3"
+
+
+test "create view of spreadsheet : where condition":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testView = createView(testSpreadsheet, testSpreadsheet.where("Second", "==", "5"))
+
+    check testView.header.items[0].strVal == "Index"
+    check testView.header.items[1].strVal == "Second"
+    check testView.header.items[2].strVal == "Third"
+    check testView.rows[0].items[0].strVal == "4"
+    check testView.rows[0].items[1].strVal == "5"
+    check testView.rows[0].items[2].strVal == "6"
+
+
+test "create view of spreadsheet : operator":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testView = testSpreadsheet[testSpreadsheet.where("Second", "==", "5")]
+
+    check testView.header.items[0].strVal == "Index"
+    check testView.header.items[1].strVal == "Second"
+    check testView.header.items[2].strVal == "Third"
+    check testView.rows[0].items[0].strVal == "4"
+    check testView.rows[0].items[1].strVal == "5"
+    check testView.rows[0].items[2].strVal == "6"
+
+test "DSL : length":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3, 4 | 5 | 6]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    check testSpreadsheet.LENGTH() == 2
