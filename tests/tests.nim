@@ -720,3 +720,34 @@ test "DSL : CREATE_SPREADSHEET":
     check testSpreadsheet.rows[1].items[2].strVal == "3"
     check testSpreadsheet.rows[1].items[3].strVal == "This"
     check testSpreadsheet.rows[1].items[4].strVal == "-"
+
+
+test "DSL : SET_PERMISSIONS":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+        1 | 2 | 3 | "This" | null
+
+    testSpreadsheet.SET_PERMISSIONS:
+        USER:
+            "Test_User"
+        PERMIT:
+            @["Index"]
+    
+    check testSpreadsheet.permissions["Test_User"]["Index"] == true
+    check testSpreadsheet.permissions["Test_User"]["Fourth"] == false
+    check testSpreadsheet.permissions["Test_User"]["Third"] == false
+    check testSpreadsheet.permissions["Test_User"]["Second"] == false
+    check testSpreadsheet.permissions["Test_User"]["Fith"] == false
+    check testSpreadsheet.permissions["UNIVERSAL"]["Index"] == false
+    check testSpreadsheet.permissions["UNIVERSAL"]["Fourth"] == false
+    check testSpreadsheet.permissions["UNIVERSAL"]["Third"] == false
+    check testSpreadsheet.permissions["UNIVERSAL"]["Second"] == false
+    check testSpreadsheet.permissions["UNIVERSAL"]["Fith"] == false
+
+
+test "DSL : VIEW":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+        1 | 2 | 3 | "This" | null
