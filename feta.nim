@@ -153,6 +153,13 @@ proc newSpreadsheetGen*(rows : Row): SpreadSheet =
   var x : seq[Row]
   result = newSpreadsheet("", x, rows)
 
+proc newSpreadsheetGenFromRows*(rows : seq[Row]): SpreadSheet = 
+  ## Generate new Spreadsheet with given
+  ## name
+  ## rows
+  ## header
+  result = newSpreadsheet("", rows[1..len(rows)-1], rows[0])
+
 macro SENDMAIL * (statement: untyped) =  
   ## Macro for sending Mail
   ## Atomic Action: Send email
@@ -187,6 +194,10 @@ macro SENDMAIL * (statement: untyped) =
   else:
     result = newCall("sendNewMail", target, subject, text)
 
+proc interimAddrow*(sheet : SpreadSheet, row : Row) : SpreadSheet =
+  var x = sheet
+  x.addRow(row)
+  return x
 
 macro CREATE_SPREADSHEET * (statement : untyped) : SpreadSheet =
   ## Macro for returning spreadsheets from logic
@@ -197,7 +208,11 @@ macro CREATE_SPREADSHEET * (statement : untyped) : SpreadSheet =
   ##  row1
   ##  row2
   ##  ...
-  result = newCall("newSpreadsheetGen", statement)
+  var toReturn = newCall("newSpreadsheetGen", statement[0])
+  for s in statement[1..len(statement)-1]:
+    toReturn = newCall("interimAddrow", toReturn, s)
+
+  result = toReturn
 
 macro FROM_PROC * (statement : untyped) : proc() : SpreadSheet =
   ## Macro for returning spreadsheet from logic
@@ -331,6 +346,8 @@ macro ADDFORM * (statement : untyped) =
       of "LOAD":
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
       of "SPREADSHEET":
+        sheet = newProc(params=[ident("SpreadSheet")], body=s)
+      of "CREATE_SPREADSHEET":
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
       of "FROM_PROC":
         sheet = s

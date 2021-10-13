@@ -453,3 +453,20 @@ test "convert to htmlview":
                         </table>
                 </body>
                 </html>"""
+
+test "convert to JSON":
+    var name = "TestName"
+    var header = "Index"  | "Second" | "Third"
+    var rows = @[1 | 2 | 3]
+
+    var testSpreadsheet = newSpreadSheet(name, rows, header)
+
+    var testJson = testSpreadsheet.toJSON()
+    
+    check $testJson["name"] == "\"TestName\""
+    check $testJson["values"][0][0] == "\"Index\""
+    check $testJson["values"][0][1] == "\"Second\""
+    check $testJson["values"][0][2] == "\"Third\""
+    check $testJson["values"][1][0] == "\"1\""
+    check $testJson["values"][1][1] == "\"2\""
+    check $testJson["values"][1][2] == "\"3\""
