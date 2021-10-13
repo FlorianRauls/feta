@@ -4,5 +4,5 @@ FETA is a domain-specific language for general purpose office automation. FETA i
 ## Quick start guide
 If you want to learn how to use FETA for your office automation tasks, please visit our [Quick start guide](https://github.com/FlorianRauls/office-DSL-thesis/wiki/Quick-Start-Guide).
 
-## Continuous integration
+## Documentation
 If you want to contribute to FETA's codebase, please visit our [documentation](https://github.com/FlorianRauls/office-DSL-thesis/wiki/documentation).
