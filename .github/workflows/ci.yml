@@ -21,7 +21,8 @@ jobs:
         version:
           - stable
           - 1.4.0
-          - 1.2.12
+          - 1.4.2
+          - 1.4.8
         os:
           - ubuntu-latest
           - windows-latest
