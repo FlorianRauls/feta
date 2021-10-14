@@ -55,6 +55,7 @@ proc SHOW * (id : string) =
   ## position `id` on the SERVER-object
   show(SERVER[id])
 
+
 proc WHERE * (spreadsheet : SpreadSheet, column : string, operator : string, condition : string) : seq[int] =
   ## DSL wrapper of where(spreadsheet) function
   ## Returns a seq of indices, which denote the rows
