@@ -1,7 +1,7 @@
-var userMail* = "carpi12350@gmail.com" ## Insert your email-adress here
-var userMailWord* = "jiorapvvstuxbtbq" ## Inser your email-password here
-var smtpServer* = "smtp.gmail.com" ## SMTP-server you are using
-var smtpServerPort* = "465" ## Port of SMT-server you are using
+var userMail* = "" ## Insert your email-adress here
+var userMailWord* = "" ## Inser your email-password here
+var smtpServer* = "" ## SMTP-server you are using
+var smtpServerPort* = "" ## Port of SMT-server you are using
 var targetMailTest* = "" ## Email you want to you use for testing
 var targetMailNameTest* = "" ## Name you want to you use for testing
 
