@@ -5,7 +5,7 @@ import json
 import strutils
 
 type 
-  ## DataType which holds all necessary information for the odslServer
+  ## DataType which holds all necessary information for the SERVER
   CustomServer = object
     route : Table[string, SpreadSheet] ## Routes from an id to a SpreadSheet
     procRoute : Table[string, proc (): SpreadSheet] ## Routes from an id to a function which returns a SpreadSheet
@@ -17,8 +17,8 @@ type
     jester : Jester ## The Jester server object
     settings : Settings ## Settings for Jester server
 
-var odslServer * : CustomServer
-odslServer.settings = newSettings(port=5000.Port)
+var SERVER * : CustomServer ## SERVER-singleton which has to be reachable through FETA-code
+SERVER.settings = newSettings(port=5000.Port) ## default port is 5000
 
 proc parseResult * (received : JsonNode) : SpreadSheet =
   ## Receives the JsonNode, which was sent through a Websocket
@@ -50,19 +50,25 @@ proc `[]` * (server : var CustomServer, id : string) : SpreadSheet =
   except KeyError:
     return server.procRoute[id]()
 
+## Jester router which configures routing automaticall
+## Each added form/view is available through
+## http://localhost:PORT/?id=ID
+## where `ID` is the name the spreadsheet was given with
+## `AS`
+
 router myrouter:
   get "/":
     try:
       case request.reqMeth:
         of HttpGet:
-          case odslServer.methods[request.params["id"]]:
+          case SERVER.methods[request.params["id"]]:
             of "view":
-              resp odslServer.route[request.params["id"]].generateHTMLView()
+              resp SERVER.route[request.params["id"]].generateHTMLView()
             of "form":
-              resp odslServer.route[request.params["id"]].generateHTMLForm()
+              resp SERVER.route[request.params["id"]].generateHTMLForm()
             of "function":
-              var x = odslServer.allowance[request.params["id"]]
-              resp odslServer.procRoute[request.params["id"]]().generateHTMLForm(x)
+              var x = SERVER.allowance[request.params["id"]]
+              resp SERVER.procRoute[request.params["id"]]().generateHTMLForm(x)
             else:
               resp "Unknown method!"
         else:
@@ -87,12 +93,12 @@ router myrouter:
       # parse json to SpreadSheet
       var parsed = jso.parseResult()
       ###### Check if parsed result is valid############
-      if odslServer.confirmRoute[id](parsed):
-        odslServer.applyRoute[id](parsed)
+      if SERVER.confirmRoute[id](parsed):
+        SERVER.applyRoute[id](parsed)
         var mess = wsconn.send("success")
         ws.close(wsconn)
       else:
-        var mess = wsconn.send(odslServer.errorMessage[id])
+        var mess = wsconn.send(SERVER.errorMessage[id])
   
     except:
       echo "websocket close: ", getCurrentExceptionMsg()
@@ -100,38 +106,38 @@ router myrouter:
 
 proc setPort * (port : int) =
   ## Takes a port number as input and initiates the HTTP-Server
-  odslServer.settings = newSettings(port=port.Port)
+  SERVER.settings = newSettings(port=port.Port)
 
 proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), permits : seq[string], error = "something went wrong") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
-  odslServer.procRoute[id] = p
-  odslServer.allowance[id] = permits
-  odslServer.methods[id] = "function"
-  odslServer.confirmRoute[id] = confirm
-  odslServer.applyRoute[id] = apply
-  odslServer.errorMessage[id] = error
+  SERVER.procRoute[id] = p
+  SERVER.allowance[id] = permits
+  SERVER.methods[id] = "function"
+  SERVER.confirmRoute[id] = confirm
+  SERVER.applyRoute[id] = apply
+  SERVER.errorMessage[id] = error
 
 proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
-  odslServer.procRoute[id] = p
-  odslServer.allowance[id] = @[]
-  odslServer.methods[id] = "function"
-  odslServer.confirmRoute[id] = confirm
-  odslServer.applyRoute[id] = apply
-  odslServer.errorMessage[id] = error
+  SERVER.procRoute[id] = p
+  SERVER.allowance[id] = @[]
+  SERVER.methods[id] = "function"
+  SERVER.confirmRoute[id] = confirm
+  SERVER.applyRoute[id] = apply
+  SERVER.errorMessage[id] = error
   
 proc addToServer*(table : SpreadSheet, id : string, typ = "function") =
   ## Adds the given SpreadSheet to the given ID with
   ## desired kind
-  odslServer.route[id] = table
-  odslServer.methods[id] = typ
+  SERVER.route[id] = table
+  SERVER.methods[id] = typ
 
 proc startServer () {.async.} =
   ## Starts serving the HTTP-Server
-  odslServer.jester = initJester(myrouter, settings=odslServer.settings)
-  odslServer.jester.serve()
+  SERVER.jester = initJester(myrouter, settings=SERVER.settings)
+  SERVER.jester.serve()
 
 proc serveServer * () =
   ## Initiates the Jester Server
