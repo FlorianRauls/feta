@@ -1,13 +1,13 @@
-import feta
+import ../feta
 
 var spreadsheet = LOAD:
-    Webcrawl:
-        "www.addresofwebsite.com"
+    HTML:
+        "website.html"
         
 spreadsheet.SAVE:
     GoogleSheets:
         "idforgooglesheets"
-        
+
 ONSERVER:
     for ROW in spreadsheet.rows:
         ADDFORM:
@@ -15,10 +15,10 @@ ONSERVER:
                 var x = LOAD:
                     GoogleSheets:
                         "idforgooglesheets"
-                x = x.WHERE("supervisor", "==", ROW["supervisor"])
+                x = x[x.WHERE("supervisor", "==", ROW[spreadsheet.COLUMNINDEX("supervisor")])]
                 return x
             AS:
-                ROW["supervisor"]
+                ROW[spreadsheet.COLUMNINDEX("supervisor")]
             ONACCEPT:
                 var main = LOAD:
                     GoogleSheets:

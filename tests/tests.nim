@@ -745,9 +745,35 @@ test "DSL : SET_PERMISSIONS":
     check testSpreadsheet.permissions["UNIVERSAL"]["Second"] == false
     check testSpreadsheet.permissions["UNIVERSAL"]["Fith"] == false
 
-
 test "DSL : VIEW":
     var testSpreadsheet = CREATE_SPREADSHEET:
         "Index"  | "Second" | "Third" | "Fourth" | "Fith"
         1 | 2 | 3 | "This" | null
         1 | 2 | 3 | "This" | null
+
+test "DSL : JOIN":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+        2 | 2 | 3 | "This2" | null
+        3 | 2 | 3 | "Thi3s" | null
+        4 | 2 | 3 | "Th4is" | null
+    var testSpreadsheet2 = CREATE_SPREADSHEET:
+        "Index"  | "Another Second" 
+        3 | 4 
+        2 | 6 
+
+    var joint = testSpreadsheet.JOIN:
+        WITH:
+            testSpreadsheet2
+        ON:
+            "Index"
+    
+    check joint.header.items.len() == 6
+    check joint.header.items[0].strVal == "Second"
+    check joint.header.items[5].strVal == "Another Second"
+    check joint.rows[0].items[0].strVal == "2"
+    check joint.rows[0].items[1].strVal == "3"
+    check joint.rows[0].items[2].strVal == "Thi3s"
+    check joint.rows[0].items[3].strVal == "-"
+    check joint.rows[0].items[4].strVal == "3"

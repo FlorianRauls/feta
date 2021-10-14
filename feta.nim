@@ -278,17 +278,10 @@ macro LOAD * (statement : untyped) : SpreadSheet =
   result = newCall("loadSpreadSheet", creation)
 
 
-macro SAVE * (statement : untyped) : SpreadSheet =
+macro SAVE * (sheet : SpreadSheet, statement : untyped) =
   ## Macro Interface for Meta-API saving
-  var iden : NimNode
-  var creation : NimNode
-  for s in statement:
-    case s[0].strVal:
-      of "TO":
-        iden = s[1][0]
-      else:
-        creation = s
-  result = newCall("saveSpreadSheet", creation, iden)
+  var name = newStrLitNode($statement[0][0])
+  result = newCall("saveSpreadSheet", sheet, name, statement[0][1][0])
 
   
 macro ADDVIEW * (statement : untyped) =
@@ -347,7 +340,7 @@ macro ADDFORM * (statement : untyped) =
       of "CREATE_SPREADSHEET":
         sheet = newProc(params=[ident("SpreadSheet")], body=s)
       of "FROM_PROC":
-        sheet = s
+        sheet = newProc(params=[ident("SpreadSheet")], body=s[1])
       of "ALLOWEDIT":
         restricEdits = s[1]
       of "ACCEPTIF":
@@ -372,6 +365,25 @@ macro ONSERVER * (statement : untyped) =
   result.add(newCall("serveServer"))
   discard statement
 
+proc WITH*(sheet : SpreadSheet) =
+  return
+
+proc ON*(sheet : string) =
+  return
+
+macro JOIN *(sheet : SpreadSheet, statement : untyped) : SpreadSheet =
+  ## Macro Interface for `joinSpreadsheets()`
+  var other : NimNode
+  var on : NimNode
+  for s in statement:
+    case s[0].strVal:
+      of "WITH":
+        other = s[1]
+      of "ON":
+        on = s[1]
+  var copy = sheet
+  result = newCall("joinSpreadSheetsStatic", copy, other, on)
+
 
 proc COLUMNINDEX * (sheet : SpreadSheet, column : string) : int =
   ## Takes `sheet : SpreadSheet` and `column : string`
@@ -383,4 +395,9 @@ proc COLUMNINDEX * (sheet : SpreadSheet, column : string) : int =
 proc `[]`*(row : Row, index : int) : string =
   result = row.items[index].strVal
 
+proc AT * (sheet : SpreadSheet, ind : int, col : string) : string =
+  result = sheet[ind, col].strVal
+
 export spreadsheets, server, googleapi, metaapi
+
+

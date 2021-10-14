@@ -544,8 +544,29 @@ proc joinSpreadSheets * (SpreadSheet1 : var SpreadSheet, SpreadSheet2 : SpreadSh
   SpreadSheet1 = newSpreadSheet(SpreadSheet1.name, outRows, SpreadSheet1.header | SpreadSheet2.header)
   SpreadSheet1.removeColumn(on)
 
-# Atomic Actions: Set Permission for column in table
+proc joinSpreadSheetsStatic * (SpreadSheet1 : var SpreadSheet, SpreadSheet2 : SpreadSheet, on : string) : SpreadSheet =
+  ## Atomic Action : Join SpreadSheets (INNER JOIN)
+  # First: Built Hash Table of first SpreadSheet
+  var hash = toHash(SpreadSheet1, on)
+
+  var ind = getColumnIndex(SpreadSheet2, on)
+  var outRows : seq[Row]
+
+  # Second: Match through lookups
+  for i, row in pairs(SpreadSheet2.rows):
+    var row_i : Row
+    try:
+      row_i = Row(items: hash[row.items[ind].strVal])
+      outRows.add(row_i | row)
+    except KeyError:
+      continue
+  SpreadSheet1 = newSpreadSheet(SpreadSheet1.name, outRows, SpreadSheet1.header | SpreadSheet2.header)
+  SpreadSheet1.removeColumn(on)
+  result = SpreadSheet1
+
+  
 proc setNewPermissions * (sheet : var SpreadSheet, role : string, allow : seq[string]) =
+  ## Atomic Actions: Set Permission for column in table
   sheet.permissions[role] = {"placeholder": true}.toTable
   sheet.permissions[role].del("placeholder")
   for name in allow:
@@ -758,6 +779,24 @@ proc fromCSV * (csv : string) : SpreadSheet =
 
   result = newSpreadSheet("", outRows, head)
 
+proc toCSV * (sheet : Spreadsheet, csv : string) =
+  ## takes a spreadsheet and a string
+  ## and writes the spreadsheet into a .csv file
+  ## with the name `csv`
+  var fileContent = ""
+  for index, val in pairs(sheet.header.items):
+    if(index == len(sheet.header.items)-1):
+      fileContent = fileContent & " " & val.strVal & "\n" 
+    else:
+      fileContent = val.strVal & ", " & fileContent
+  
+  for index1, row in pairs(sheet.rows):
+    for index2, val in pairs(row.items):
+      if(index2 == len(sheet.header.items)-1):
+        fileContent = fileContent & " " & val.strVal & "\n" 
+      else:
+        fileContent = val.strVal & ", " & fileContent
+
 proc fromJSONString * (j : JsonNode) : SpreadSheet =
   ## Reads SpreadSheet values from
   ## JSONstring
@@ -781,6 +820,10 @@ proc fromGoogleSheets * (id : string) : SpreadSheet {.discardable.}  =
   ## Atomic Action read from googlesheets
   var response = openSheet(id)
   result = fromJSONString(response)
+
+proc toGoogleSheets * (sheet : SpreadSheet, id : string) =
+  ## Atomic Action read from googlesheets
+  writeGoogleSheet(sheet.toJSONBody(), id)
 
 proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
   ## Update a Spreadsheet through one of it's views based on identifying column "on"
@@ -857,8 +900,11 @@ proc HTML * (s : string) =
 proc CSV * (s : string) = 
   return
 
+proc GoogleSheets*(s : string) =
+  return
 
 proc `[]` * (spreadSheet : SpreadSheet, selection : seq[int]) : SpreadSheet =
   ## Returns the inputed SpreadSheet with a selection of rows
   ## based on the indices in selection
   result = createView(spreadSheet, selection, spreadsheet.name)
+

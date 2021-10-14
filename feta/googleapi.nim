@@ -49,6 +49,3 @@ proc createNewGoogleSheet * (title : string) : Future[JsonNode] {.async.}  =
     var body = %* {"properties" : {"title": title} }
     var response = await conn.post(sheetApiURL, body= body)
     return response
-
-proc GoogleSheets * (s : string) =
-    return

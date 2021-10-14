@@ -111,6 +111,16 @@ proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s :
   odslServer.confirmRoute[id] = confirm
   odslServer.applyRoute[id] = apply
   odslServer.errorMessage[id] = error
+
+proc addFormToServer*(p : proc (): SpreadSheet, id : string, confirm : proc (s : SpreadSheet) : bool,  apply : proc(s2 : SpreadSheet), error = "something went wrong") =
+  ## Adds the given SpreadSheet to the given ID with
+  ## desired kind
+  odslServer.procRoute[id] = p
+  odslServer.allowance[id] = @[]
+  odslServer.methods[id] = "function"
+  odslServer.confirmRoute[id] = confirm
+  odslServer.applyRoute[id] = apply
+  odslServer.errorMessage[id] = error
   
 proc addToServer*(table : SpreadSheet, id : string, typ = "function") =
   ## Adds the given SpreadSheet to the given ID with

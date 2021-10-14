@@ -15,14 +15,15 @@ macro loadSpreadSheet * (statement : untyped) : SpreadSheet =
             result = newCall("fromCSV", statement[1][0])
 
 
-macro saveSpreadSheet * (statement : untyped) : SpreadSheet =
+macro saveSpreadSheet * (sheet : SpreadSheet, avenue : string, parameter : string) =
     ## Meta-Interface for the saving of SpreadSheets
     ## Simply add the new method you want to implement to it
     ## for easier interfacing
-    case $statement[0].ident:
+    echo avenue.kind
+    case $avenue:
         of "GoogleSheets":
-            result = newCall("toGoogleSheets", statement[1][0])
+            result = newCall("toGoogleSheets", sheet, parameter)
         of "HTML":
-            result = newCall("toHTMLFile", statement[1][0])
+            result = newCall("toHTMLFile", sheet, parameter)
         of "CSV":
-            result = newCall("toCSV", statement[1][0])
+            result = newCall("toCSV", sheet, parameter)
