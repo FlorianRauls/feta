@@ -9,6 +9,7 @@ import jester
 import htmlparser
 import xmltree
 import parsecsv
+import httpclient
 
 
 from mailFunc import mailBot
@@ -916,3 +917,8 @@ proc `[]` * (spreadSheet : SpreadSheet, selection : seq[int]) : SpreadSheet =
   ## based on the indices in selection
   result = createView(spreadSheet, selection, spreadsheet.name)
 
+proc fromWebsite*(address : string) : SpreadSheet =
+  ## Tgets an webadrress as input and returns
+  ## first table found on HTML at website
+  var client = newHttpClient()
+  result = client.getContent(address).fromHTML()

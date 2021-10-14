@@ -13,6 +13,8 @@ macro loadSpreadSheet * (statement : untyped) : SpreadSheet =
             result = newCall("fromHTMLFile", statement[1][0])
         of "CSV":
             result = newCall("fromCSV", statement[1][0])
+        of "Webcrawl":
+            result = newCall("fromWebsite", statement[1][0])
 
 
 macro saveSpreadSheet * (sheet : SpreadSheet, avenue : string, parameter : string) =
