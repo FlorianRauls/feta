@@ -770,11 +770,12 @@ proc fromCSV * (csv : string) : SpreadSheet =
   var outRows : seq[Row]
   var head : Row
   for h in p.headers:
-    head = head.add(h)
+    head = head.add(h.strip())
   while p.readRow():
     var row : Row
     for col in items(p.headers):
-      row = row.add(p.rowEntry(col))
+      var stripped = p.rowEntry(col).strip()
+      row = row.add(stripped )
     outRows.add(row)
 
   result = newSpreadSheet("", outRows, head)
@@ -786,16 +787,22 @@ proc toCSV * (sheet : Spreadsheet, csv : string) =
   var fileContent = ""
   for index, val in pairs(sheet.header.items):
     if(index == len(sheet.header.items)-1):
-      fileContent = fileContent & " " & val.strVal & "\n" 
+      fileContent = fileContent & ", " & val.strVal & "\n" 
+    elif (index == 0):
+      fileContent = fileContent & "" & val.strVal
     else:
-      fileContent = val.strVal & ", " & fileContent
+      fileContent = fileContent & ", " & val.strVal
   
   for index1, row in pairs(sheet.rows):
     for index2, val in pairs(row.items):
       if(index2 == len(sheet.header.items)-1):
-        fileContent = fileContent & " " & val.strVal & "\n" 
+        fileContent = fileContent & ", " & val.strVal & "\n" 
+      elif (index2 == 0):
+        fileContent = fileContent & "" & val.strVal
       else:
-        fileContent = val.strVal & ", " & fileContent
+        fileContent = fileContent & ", " & val.strVal
+
+  writeFile(csv, fileContent)
 
 proc fromJSONString * (j : JsonNode) : SpreadSheet =
   ## Reads SpreadSheet values from
@@ -835,6 +842,7 @@ proc update * (toUpdate : var SpreadSheet, view : SpreadSheet, on = "index") =
         for col in view.header.items:
           var currIndex = view.getColumnIndex(col.strVal)
           var currOrigIndex = toUpdate.getColumnIndex(col.strVal)
+          echo view.rows[i].items[currIndex].strVal
           toUpdate.rows[k].items[currOrigIndex] = view.rows[i].items[currIndex]
 
 proc createView * (table : SpreadSheet, indRange : seq[int], colRange : seq[string], newName="") : SpreadSheet =

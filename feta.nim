@@ -53,7 +53,7 @@ proc SHOW * (id : string) =
   ## DSL wrapper of show(spreadsheet) function
   ## Pretty prints the SpreadSheet which is at
   ## position `id` on the SERVER-object
-  show(odslServer[id])
+  show(SERVER[id])
 
 proc WHERE * (spreadsheet : SpreadSheet, column : string, operator : string, condition : string) : seq[int] =
   ## DSL wrapper of where(spreadsheet) function

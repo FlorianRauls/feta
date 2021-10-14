@@ -84,14 +84,20 @@ router myrouter:
 
       # seperate id from json part
       var seperate : seq[string]
-      for s in received.split(" ", 2):
-        seperate.add(s)
 
+      for s in received.split("[", 1):
+        seperate.add(s)
+      echo seperate
       id = seperate[0]
+      id = id[0..len(id)-2]
+
       # parse request to json
+      seperate[1] = "[" & seperate[1] 
       var jso = parseJSON(seperate[1])
+    
       # parse json to SpreadSheet
       var parsed = jso.parseResult()
+
       ###### Check if parsed result is valid############
       if SERVER.confirmRoute[id](parsed):
         SERVER.applyRoute[id](parsed)

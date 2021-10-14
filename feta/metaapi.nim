@@ -24,6 +24,6 @@ macro saveSpreadSheet * (sheet : SpreadSheet, avenue : string, parameter : strin
         of "GoogleSheets":
             result = newCall("toGoogleSheets", sheet, parameter)
         of "HTML":
-            result = newCall("toHTMLFile", sheet, parameter)
+            result = newCall("writeHTML", sheet, parameter)
         of "CSV":
             result = newCall("toCSV", sheet, parameter)
