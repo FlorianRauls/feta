@@ -471,6 +471,14 @@ test "JSON2":
     check $testJson["values"][1][1] == "\"2\""
     check $testJson["values"][1][2] == "\"3\""
 
+test "Edge case No. 3":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+    testSpreadsheet.ADDCOLUMN:
+        2 | 2 | 3 
+        2 | 2 | null | 4
+        2 | 2 | 3 
 
 test "read from html":
     
@@ -777,3 +785,33 @@ test "DSL : JOIN":
     check joint.rows[0].items[2].strVal == "Thi3s"
     check joint.rows[0].items[3].strVal == "-"
     check joint.rows[0].items[4].strVal == "3"
+
+test "Edge case No. 1":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+        2 | 2 | 3 
+        3 | 2 | 3 | "Thi3s" | null
+        4 | 2 | 3 
+
+    check testSpreadsheet.rows[1].items[0].strVal == "2"
+    check testSpreadsheet.rows[1].items[1].strVal == "2"
+    check testSpreadsheet.rows[1].items[2].strVal == "3"
+    check testSpreadsheet.rows[1].items[3].strVal == "-"
+    check testSpreadsheet.rows[1].items[4].strVal == "-"
+
+test "Edge case No. 2":
+    var testSpreadsheet = CREATE_SPREADSHEET:
+        "Index"  | "Second" | "Third" | "Fourth" | "Fith"
+        1 | 2 | 3 | "This" | null
+    testSpreadsheet.ADDROW:
+        2 | 2 | 3 
+        3 | 2 | 3 | "Thi3s" | null
+        4 | 2 | 3 
+
+    check testSpreadsheet.rows[1].items[0].strVal == "2"
+    check testSpreadsheet.rows[1].items[1].strVal == "2"
+    check testSpreadsheet.rows[1].items[2].strVal == "3"
+    check testSpreadsheet.rows[1].items[3].strVal == "-"
+    check testSpreadsheet.rows[1].items[4].strVal == "-"
+
